@@ -213,20 +213,38 @@ import './js/supabase-api.js';
 
   /* Pan */
   const mc = document.getElementById('map-container');
+  const vp = document.getElementById('viewport');
   let tx = 0, ty = 0;
+  const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
+  const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
 
-  function applyTransform() { mc.style.transform = `translate(${tx}px,${ty}px)`; }
+  function clampPan() {
+    const vw = vp.clientWidth;
+    const vh = vp.clientHeight;
+
+    tx = MAP_WIDTH <= vw
+      ? Math.round((vw - MAP_WIDTH) / 2)
+      : Math.min(0, Math.max(Math.round(vw - MAP_WIDTH), tx));
+
+    ty = MAP_HEIGHT <= vh
+      ? Math.round((vh - MAP_HEIGHT) / 2)
+      : Math.min(0, Math.max(Math.round(vh - MAP_HEIGHT), ty));
+  }
+
+  function applyTransform() {
+    clampPan();
+    mc.style.transform = `translate(${tx}px,${ty}px)`;
+  }
 
   function centerOn(x, y) {
     const ci = x - X_MIN, ri = y - Y_MIN;
     if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
     const { cx, cy } = cellCenter(ci, ri);
-    tx = Math.round(window.innerWidth  / 2 - cx);
-    ty = Math.round(window.innerHeight / 2 - cy);
+    tx = Math.round(vp.clientWidth / 2 - cx);
+    ty = Math.round(vp.clientHeight / 2 - cy);
     applyTransform();
   }
 
-  const vp = document.getElementById('viewport');
   let dragging = false, dragMoved = false, ox, oy, tx0, ty0;
 
   vp.addEventListener('mousedown', e => {
@@ -242,6 +260,7 @@ import './js/supabase-api.js';
     tx = tx0 + dx; ty = ty0 + dy; applyTransform();
   });
   window.addEventListener('mouseup', () => { dragging = false; vp.classList.remove('grabbing'); });
+  window.addEventListener('resize', applyTransform);
 
   /* Tooltip */
   const tooltip   = document.getElementById('tooltip');

@@ -80,16 +80,18 @@
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px; padding: 32px 40px 60px;
     flex: 1 0 auto;
+    align-items: start;
   }
   .map-card {
     position: relative; background-color: var(--parchment2);
     border: 1px solid var(--gold-dark); border-radius: 4px;
+    align-self: start;
     overflow: hidden; transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
     cursor: pointer;
   }
   .map-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(58,53,32,0.22); border-color: var(--gold); }
   .map-card-thumb {
-    height: 110px; background-color: var(--olive);
+    height: 82px; background-color: var(--olive);
     background-image: url('img/map 1.29.jpg');
     background-size: cover; background-position: 67% 72%;
     filter: brightness(0.6) saturate(0.7);
@@ -99,13 +101,13 @@
     content: '🗺️'; position: absolute; bottom: 8px; right: 10px;
     font-size: 24px; filter: none;
   }
-  .map-card-body { padding: 14px 16px 12px; }
+  .map-card-body { padding: 12px 14px 10px; }
   .map-card-name {
     font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
     color: var(--olive); margin-bottom: 4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .map-card-meta { font-size: 12px; color: var(--dark); opacity: 0.65; font-style: italic; }
+  .map-card-meta { font-size: 11px; color: var(--dark); opacity: 0.65; font-style: italic; }
   .map-card-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
   .map-card-cells, .visibility-badge {
     display: inline-flex; align-items: center;
@@ -114,7 +116,7 @@
   }
   .map-card-cells { background-color: var(--olive); color: var(--gold); }
   .visibility-badge { color: #2a7a2a; border: 1px solid #2a7a2a; background: rgba(42,122,42,0.08); font-weight: 700; }
-  .map-card-actions { display: flex; gap: 6px; padding: 0 16px 12px; }
+  .map-card-actions { display: flex; gap: 6px; padding: 0 14px 12px; }
   .btn-card {
     flex: 1; padding: 6px; border: 1px solid var(--gold-dark);
     background: transparent; border-radius: 3px;
@@ -167,7 +169,7 @@
       gap: 16px;
       padding: 22px 16px 38px;
     }
-    .map-card-actions { flex-direction: column; }
+    .map-card-actions { flex-direction: row; }
     footer { padding: 15px 14px; font-size: 10px; letter-spacing: 2px; }
   }
 </style>

@@ -700,8 +700,31 @@ const mc = document.getElementById('map-container');
 const vp = document.getElementById('viewport');
 let tx = 0, ty = 0, zoom = 1;
 const MIN_ZOOM = 0.5, MAX_ZOOM = 2.5, ZOOM_STEP = 0.15;
+const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
+const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
+
+function clampPan() {
+  const vw = vp.clientWidth;
+  const vh = vp.clientHeight;
+  const scaledWidth = MAP_WIDTH * zoom;
+  const scaledHeight = MAP_HEIGHT * zoom;
+
+  tx = scaledWidth <= vw
+    ? Math.round((vw - scaledWidth) / 2)
+    : Math.min(0, Math.max(Math.round(vw - scaledWidth), tx));
+
+  ty = scaledHeight <= vh
+    ? Math.round((vh - scaledHeight) / 2)
+    : Math.min(0, Math.max(Math.round(vh - scaledHeight), ty));
+}
+
+function viewportPoint(clientX, clientY) {
+  const rect = vp.getBoundingClientRect();
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
 
 function applyTransform() {
+  clampPan();
   mc.style.transformOrigin = '0 0';
   mc.style.transform = `translate(${tx}px,${ty}px) scale(${zoom})`;
   document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
@@ -710,12 +733,12 @@ function centerOn(x, y) {
   const ci = x - X_MIN, ri = y - Y_MIN;
   if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
   const { cx, cy } = cellCenter(ci, ri);
-  tx = Math.round(window.innerWidth/2 - 32 - cx * zoom);
-  ty = Math.round(window.innerHeight/2 - 20 - cy * zoom);
+  tx = Math.round(vp.clientWidth / 2 - cx * zoom);
+  ty = Math.round(vp.clientHeight / 2 - cy * zoom);
   applyTransform();
 }
 
-function setZoom(nextZoom, anchorX = window.innerWidth / 2, anchorY = window.innerHeight / 2) {
+function setZoom(nextZoom, anchorX = vp.clientWidth / 2, anchorY = vp.clientHeight / 2) {
   const oldZoom = zoom;
   zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
   if (zoom === oldZoom) return;
@@ -761,8 +784,10 @@ document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom
 document.getElementById('zoom-reset').addEventListener('click', () => setZoom(1));
 vp.addEventListener('wheel', e => {
   e.preventDefault();
-  setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), e.clientX, e.clientY);
+  const anchor = viewportPoint(e.clientX, e.clientY);
+  setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), anchor.x, anchor.y);
 }, { passive: false });
+window.addEventListener('resize', applyTransform);
 
 /* ── Tooltip ── */
 const tooltip   = document.getElementById('tooltip');
