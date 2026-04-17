@@ -18,6 +18,7 @@ npm run dev
 ```
 
 Le serveur local sert le dossier `public/`.
+Le script `npm run build` ne transforme rien : il permet seulement a Vercel de traiter le projet comme un site statique et de publier `public/`.
 
 ## Initialiser Supabase
 

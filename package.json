@@ -4,8 +4,8 @@
   "description": "Dofus Retro 1.29 - Fan Site",
   "private": true,
   "scripts": {
+    "build": "node -e \"console.log('Static site ready')\"",
     "dev": "serve public",
-    "start": "serve public",
     "setup:supabase": "node scripts/setup-supabase.js"
   },
   "dependencies": {
