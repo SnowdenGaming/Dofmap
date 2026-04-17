@@ -188,7 +188,6 @@
     <span class="title">Test Leaflet - grille Dofus Retro</span>
   </div>
   <div class="topbar-right">
-    <button class="btn" id="toggle-grid" type="button">Grille</button>
     <button class="btn" id="home-btn" type="button">[0, 0]</button>
   </div>
 </div>
@@ -221,10 +220,11 @@
   const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
   const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
   const ZOOM_STEP = 0.25;
+  const MIN_ZOOM = -2;
+  const MAX_ZOOM = 3;
   const bounds = L.latLngBounds([[-MAP_HEIGHT, 0], [0, MAP_WIDTH]]);
 
   const coords = document.getElementById('coords');
-  let gridVisible = true;
   let selectedKey = null;
 
   function cellWidth(ci) {
@@ -240,12 +240,15 @@
     return [[-bottom, left], [-top, left + cellWidth(ci)]];
   }
 
+  function cellCenterByIndex(ci, ri) {
+    return [
+      -(ri * ROW_PITCH + 10.5),
+      colLeft[ci] + cellWidth(ci) / 2
+    ];
+  }
+
   function cellCenter(x, y) {
-    const ci = x - X_MIN;
-    const ri = y - Y_MIN;
-    const left = colLeft[ci];
-    const top = ri * ROW_PITCH;
-    return [-(top + 10.5), left + cellWidth(ci) / 2];
+    return cellCenterByIndex(x - X_MIN, y - Y_MIN);
   }
 
   function pointToCell(latlng) {
@@ -275,8 +278,8 @@
     scrollWheelZoom: true,
     zoomSnap: ZOOM_STEP,
     zoomDelta: ZOOM_STEP,
-    minZoom: -4,
-    maxZoom: 3,
+    minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
     maxBounds: bounds,
     maxBoundsViscosity: 1,
     wheelPxPerZoomLevel: 90
@@ -327,7 +330,7 @@
   gridLayer.addTo(map);
 
   function drawGrid(canvas) {
-    if (!canvas || !gridVisible) return;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const size = map.getSize();
     ctx.clearRect(0, 0, size.x, size.y);
@@ -389,28 +392,17 @@
     map.panTo(cellCenter(x, y), { animate: true });
   }
 
-  function snapUp(value) {
-    return Math.ceil(value / ZOOM_STEP) * ZOOM_STEP;
-  }
-
-  function coverZoom() {
-    const size = map.getSize();
-    return snapUp(Math.log2(Math.max(size.x / MAP_WIDTH, size.y / MAP_HEIGHT)));
-  }
-
-  function enforceCoverZoom() {
-    const minZoom = coverZoom();
-    map.setMinZoom(minZoom);
-    if (map.getZoom() < minZoom) map.setZoom(minZoom, { animate: false });
+  function keepInsideBounds() {
     map.panInsideBounds(bounds, { animate: false });
     refreshGrid();
   }
 
-  map.fitBounds(bounds, { animate: false });
-  enforceCoverZoom();
+  map.setView(cellCenter(0, 0), 0, { animate: false });
   map.setMaxBounds(bounds);
-  map.on('resize', enforceCoverZoom);
-  map.on('zoomend moveend', () => map.panInsideBounds(bounds, { animate: false }));
+  keepInsideBounds();
+  map.on('resize', keepInsideBounds);
+  map.on('zoom zoomend move moveend', refreshGrid);
+  map.on('zoomend moveend', keepInsideBounds);
 
   map.on('mousemove', e => {
     const cell = pointToCell(e.latlng);
@@ -440,10 +432,6 @@
     const x = parseInt(document.getElementById('sx').value, 10);
     const y = parseInt(document.getElementById('sy').value, 10);
     if (!Number.isNaN(x) && !Number.isNaN(y)) centerOn(x, y);
-  });
-  document.getElementById('toggle-grid').addEventListener('click', () => {
-    gridVisible = !gridVisible;
-    refreshGrid();
   });
   ['sx', 'sy'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
