@@ -32,6 +32,19 @@
   .leaflet-control-attribution {
     display: none;
   }
+  .leaflet-control-zoom {
+    border: 1px solid rgba(191, 176, 123, 0.38);
+    box-shadow: none;
+  }
+  .leaflet-control-zoom a {
+    background: rgba(42, 37, 21, 0.94);
+    color: #D4C48A;
+    border-color: rgba(191, 176, 123, 0.28);
+  }
+  .leaflet-control-zoom a:hover {
+    background: rgba(88, 83, 58, 0.96);
+    color: #D4C48A;
+  }
   .leaflet-image-layer {
     image-rendering: auto;
   }
@@ -207,7 +220,8 @@
 
   const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
   const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
-  const bounds = [[0, 0], [MAP_HEIGHT, MAP_WIDTH]];
+  const ZOOM_STEP = 0.25;
+  const bounds = L.latLngBounds([[-MAP_HEIGHT, 0], [0, MAP_WIDTH]]);
 
   const coords = document.getElementById('coords');
   let gridVisible = true;
@@ -222,17 +236,21 @@
     const ri = y - Y_MIN;
     const left = colLeft[ci];
     const top = ri * ROW_PITCH;
-    return [[top, left], [top + 21, left + cellWidth(ci)]];
+    const bottom = top + 21;
+    return [[-bottom, left], [-top, left + cellWidth(ci)]];
   }
 
   function cellCenter(x, y) {
-    const [[top, left], [bottom, right]] = cellBounds(x, y);
-    return [(top + bottom) / 2, (left + right) / 2];
+    const ci = x - X_MIN;
+    const ri = y - Y_MIN;
+    const left = colLeft[ci];
+    const top = ri * ROW_PITCH;
+    return [-(top + 10.5), left + cellWidth(ci) / 2];
   }
 
   function pointToCell(latlng) {
     const px = latlng.lng;
-    const py = latlng.lat;
+    const py = -latlng.lat;
     if (px < 0 || py < 0 || px > MAP_WIDTH || py > MAP_HEIGHT) return null;
 
     const ri = Math.floor(py / ROW_PITCH);
@@ -252,21 +270,52 @@
 
   const map = L.map('leaflet-map', {
     crs: L.CRS.Simple,
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: false,
-    minZoom: -2,
+    scrollWheelZoom: true,
+    zoomSnap: ZOOM_STEP,
+    zoomDelta: ZOOM_STEP,
+    minZoom: -4,
     maxZoom: 3,
     maxBounds: bounds,
     maxBoundsViscosity: 1,
     wheelPxPerZoomLevel: 90
   });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   L.imageOverlay('img/map 1.29.jpg', bounds, {
     alt: 'Carte Dofus Retro 1.29',
     interactive: false
   }).addTo(map);
 
-  const gridLayer = L.canvas({ padding: 0.4 });
+  const gridCanvasLayer = L.Layer.extend({
+    onAdd(mapInstance) {
+      this._map = mapInstance;
+      this._canvas = L.DomUtil.create('canvas', 'leaflet-grid-layer');
+      this._canvas.style.position = 'absolute';
+      this._canvas.style.pointerEvents = 'none';
+      mapInstance.getPanes().overlayPane.appendChild(this._canvas);
+      mapInstance.on('move zoom resize zoomanim', this._reset, this);
+      this._reset();
+    },
+    onRemove(mapInstance) {
+      mapInstance.off('move zoom resize zoomanim', this._reset, this);
+      L.DomUtil.remove(this._canvas);
+    },
+    redraw() {
+      this._reset();
+    },
+    _reset() {
+      if (!this._map || !this._canvas) return;
+      const size = this._map.getSize();
+      const topLeft = this._map.containerPointToLayerPoint([0, 0]);
+      L.DomUtil.setPosition(this._canvas, topLeft);
+      this._canvas.width = size.x;
+      this._canvas.height = size.y;
+      drawGrid(this._canvas);
+    }
+  });
+  const gridLayer = new gridCanvasLayer();
   const selectionLayer = L.layerGroup().addTo(map);
   const hoverTooltip = L.tooltip({
     permanent: false,
@@ -275,12 +324,9 @@
     offset: [0, -6]
   });
 
-  gridLayer.on('add', () => drawGrid());
-  gridLayer.on('remove', () => {});
   gridLayer.addTo(map);
 
-  function drawGrid() {
-    const canvas = gridLayer._container;
+  function drawGrid(canvas) {
     if (!canvas || !gridVisible) return;
     const ctx = canvas.getContext('2d');
     const size = map.getSize();
@@ -293,7 +339,7 @@
       const left = colLeft[ci];
       const right = left + cellWidth(ci);
       const p1 = map.latLngToContainerPoint([0, left]);
-      const p2 = map.latLngToContainerPoint([MAP_HEIGHT, left]);
+      const p2 = map.latLngToContainerPoint([-MAP_HEIGHT, left]);
       const p3 = map.latLngToContainerPoint([0, right]);
       ctx.beginPath();
       ctx.moveTo(Math.round(p1.x) + 0.5, p1.y);
@@ -309,8 +355,8 @@
 
     for (let ri = 0; ri <= ROWS; ri++) {
       const top = Math.min(ri * ROW_PITCH, MAP_HEIGHT);
-      const p1 = map.latLngToContainerPoint([top, 0]);
-      const p2 = map.latLngToContainerPoint([top, MAP_WIDTH]);
+      const p1 = map.latLngToContainerPoint([-top, 0]);
+      const p2 = map.latLngToContainerPoint([-top, MAP_WIDTH]);
       ctx.beginPath();
       ctx.moveTo(p1.x, Math.round(p1.y) + 0.5);
       ctx.lineTo(p2.x, Math.round(p2.y) + 0.5);
@@ -320,12 +366,7 @@
   }
 
   function refreshGrid() {
-    const canvas = gridLayer._container;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const size = map.getSize();
-    ctx.clearRect(0, 0, size.x, size.y);
-    drawGrid();
+    gridLayer.redraw();
   }
 
   function selectCell(cell) {
@@ -348,9 +389,28 @@
     map.panTo(cellCenter(x, y), { animate: true });
   }
 
-  map.fitBounds(bounds);
+  function snapUp(value) {
+    return Math.ceil(value / ZOOM_STEP) * ZOOM_STEP;
+  }
+
+  function coverZoom() {
+    const size = map.getSize();
+    return snapUp(Math.log2(Math.max(size.x / MAP_WIDTH, size.y / MAP_HEIGHT)));
+  }
+
+  function enforceCoverZoom() {
+    const minZoom = coverZoom();
+    map.setMinZoom(minZoom);
+    if (map.getZoom() < minZoom) map.setZoom(minZoom, { animate: false });
+    map.panInsideBounds(bounds, { animate: false });
+    refreshGrid();
+  }
+
+  map.fitBounds(bounds, { animate: false });
+  enforceCoverZoom();
   map.setMaxBounds(bounds);
-  map.on('move zoom resize', refreshGrid);
+  map.on('resize', enforceCoverZoom);
+  map.on('zoomend moveend', () => map.panInsideBounds(bounds, { animate: false }));
 
   map.on('mousemove', e => {
     const cell = pointToCell(e.latlng);
