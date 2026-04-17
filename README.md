@@ -8,6 +8,7 @@ Base statique pour un fan site Dofus Retro 1.29.
 - `public/js/supabase-api.js` centralise l'acces a Supabase Auth et a la table `maps`.
 - Supabase gere l'authentification, la base Postgres et les regles de securite RLS.
 - Aucun serveur Express n'est necessaire pour mettre le site en ligne.
+- Ne pas remettre de `server.js` a la racine : Vercel le detecterait comme une fonction Node.
 
 ## Developpement local
 
