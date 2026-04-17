@@ -48,6 +48,9 @@
   .leaflet-image-layer {
     image-rendering: auto;
   }
+  .leaflet-grid-line {
+    vector-effect: non-scaling-stroke;
+  }
   .topbar {
     position: fixed;
     z-index: 1000;
@@ -282,7 +285,8 @@
     maxZoom: MAX_ZOOM,
     maxBounds: bounds,
     maxBoundsViscosity: 1,
-    wheelPxPerZoomLevel: 90
+    wheelDebounceTime: 20,
+    wheelPxPerZoomLevel: 120
   });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -291,34 +295,8 @@
     interactive: false
   }).addTo(map);
 
-  const gridCanvasLayer = L.Layer.extend({
-    onAdd(mapInstance) {
-      this._map = mapInstance;
-      this._canvas = L.DomUtil.create('canvas', 'leaflet-grid-layer');
-      this._canvas.style.position = 'absolute';
-      this._canvas.style.pointerEvents = 'none';
-      mapInstance.getPanes().overlayPane.appendChild(this._canvas);
-      mapInstance.on('move zoom resize zoomanim', this._reset, this);
-      this._reset();
-    },
-    onRemove(mapInstance) {
-      mapInstance.off('move zoom resize zoomanim', this._reset, this);
-      L.DomUtil.remove(this._canvas);
-    },
-    redraw() {
-      this._reset();
-    },
-    _reset() {
-      if (!this._map || !this._canvas) return;
-      const size = this._map.getSize();
-      const topLeft = this._map.containerPointToLayerPoint([0, 0]);
-      L.DomUtil.setPosition(this._canvas, topLeft);
-      this._canvas.width = size.x;
-      this._canvas.height = size.y;
-      drawGrid(this._canvas);
-    }
-  });
-  const gridLayer = new gridCanvasLayer();
+  const gridRenderer = L.svg({ padding: 0.5 });
+  const gridLayer = L.layerGroup().addTo(map);
   const selectionLayer = L.layerGroup().addTo(map);
   const hoverTooltip = L.tooltip({
     permanent: false,
@@ -327,49 +305,31 @@
     offset: [0, -6]
   });
 
-  gridLayer.addTo(map);
+  function addGridLine(points) {
+    L.polyline(points, {
+      renderer: gridRenderer,
+      interactive: false,
+      className: 'leaflet-grid-line',
+      color: '#B8B18F',
+      weight: 1,
+      opacity: 0.75
+    }).addTo(gridLayer);
+  }
 
-  function drawGrid(canvas) {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const size = map.getSize();
-    ctx.clearRect(0, 0, size.x, size.y);
-    ctx.save();
-    ctx.strokeStyle = 'rgba(184, 177, 143, 0.75)';
-    ctx.lineWidth = 1;
-
+  function buildGrid() {
     for (let ci = 0; ci < COLS; ci++) {
       const left = colLeft[ci];
-      const right = left + cellWidth(ci);
-      const p1 = map.latLngToContainerPoint([0, left]);
-      const p2 = map.latLngToContainerPoint([-MAP_HEIGHT, left]);
-      const p3 = map.latLngToContainerPoint([0, right]);
-      ctx.beginPath();
-      ctx.moveTo(Math.round(p1.x) + 0.5, p1.y);
-      ctx.lineTo(Math.round(p2.x) + 0.5, p2.y);
-      ctx.stroke();
+      addGridLine([[0, left], [-MAP_HEIGHT, left]]);
       if (ci === COLS - 1) {
-        ctx.beginPath();
-        ctx.moveTo(Math.round(p3.x) + 0.5, p3.y);
-        ctx.lineTo(Math.round(p3.x) + 0.5, p2.y);
-        ctx.stroke();
+        const right = left + cellWidth(ci);
+        addGridLine([[0, right], [-MAP_HEIGHT, right]]);
       }
     }
 
     for (let ri = 0; ri <= ROWS; ri++) {
       const top = Math.min(ri * ROW_PITCH, MAP_HEIGHT);
-      const p1 = map.latLngToContainerPoint([-top, 0]);
-      const p2 = map.latLngToContainerPoint([-top, MAP_WIDTH]);
-      ctx.beginPath();
-      ctx.moveTo(p1.x, Math.round(p1.y) + 0.5);
-      ctx.lineTo(p2.x, Math.round(p2.y) + 0.5);
-      ctx.stroke();
+      addGridLine([[-top, 0], [-top, MAP_WIDTH]]);
     }
-    ctx.restore();
-  }
-
-  function refreshGrid() {
-    gridLayer.redraw();
   }
 
   function selectCell(cell) {
@@ -392,17 +352,9 @@
     map.panTo(cellCenter(x, y), { animate: true });
   }
 
-  function keepInsideBounds() {
-    map.panInsideBounds(bounds, { animate: false });
-    refreshGrid();
-  }
-
   map.setView(cellCenter(0, 0), 0, { animate: false });
   map.setMaxBounds(bounds);
-  keepInsideBounds();
-  map.on('resize', keepInsideBounds);
-  map.on('zoom zoomend move moveend', refreshGrid);
-  map.on('zoomend moveend', keepInsideBounds);
+  buildGrid();
 
   map.on('mousemove', e => {
     const cell = pointToCell(e.latlng);
