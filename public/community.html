@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Dofus Rétro — Cartes Communauté</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+
+  :root {
+    --parchment:  #E8DBC8;
+    --parchment2: #D9C9AE;
+    --dark:       #3A3520;
+    --olive:      #58533A;
+    --gold:       #BFB07B;
+    --gold-light: #D4C48A;
+    --gold-dark:  #8A7A50;
+    --ink:        #2A2515;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: var(--parchment);
+    color: var(--ink);
+    font-family: 'IM Fell English', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  #topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 24px; height: 44px;
+    background-color: var(--olive);
+    border-bottom: 2px solid var(--gold-dark);
+  }
+  .topbar-left, .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo {
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+    color: var(--gold-light); letter-spacing: 2px; text-decoration: none;
+  }
+  .topbar-page, .topbar-link {
+    font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold);
+    letter-spacing: 1px; text-decoration: none;
+  }
+  .topbar-link { padding: 4px 8px; border-radius: 3px; }
+  .topbar-link:hover { background: rgba(191,176,123,0.12); }
+  .topbar-sep { color: var(--gold-dark); opacity: 0.5; }
+  .btn-sm {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px;
+    padding: 4px 12px; border-radius: 3px; cursor: pointer;
+    text-decoration: none; background: transparent; color: var(--gold-dark);
+    border: 1px solid var(--gold-dark);
+  }
+  .btn-sm:hover { background: rgba(191,176,123,0.15); }
+  .user-chip {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold);
+  }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background-color: var(--dark); border: 1px solid var(--gold-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+
+  .page-header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid rgba(138,122,80,0.3);
+  }
+  .page-header h1 {
+    font-family: 'Cinzel', serif; font-size: 28px; font-weight: 700;
+    color: var(--olive); letter-spacing: 2px;
+  }
+  .page-header p { font-style: italic; color: var(--dark); opacity: 0.7; margin-top: 6px; font-size: 15px; }
+
+  .maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px; padding: 32px 40px 60px;
+  }
+  .map-card {
+    position: relative; background-color: var(--parchment2);
+    border: 1px solid var(--gold-dark); border-radius: 4px;
+    overflow: hidden; transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    cursor: pointer;
+  }
+  .map-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(58,53,32,0.22); border-color: var(--gold); }
+  .map-card-thumb {
+    height: 110px; background-color: var(--olive);
+    background-image: url('img/map 1.29.jpg');
+    background-size: cover; background-position: 67% 72%;
+    filter: brightness(0.6) saturate(0.7);
+    position: relative;
+  }
+  .map-card-thumb::after {
+    content: '🗺️'; position: absolute; bottom: 8px; right: 10px;
+    font-size: 24px; filter: none;
+  }
+  .map-card-body { padding: 14px 16px 12px; }
+  .map-card-name {
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+    color: var(--olive); margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .map-card-meta { font-size: 12px; color: var(--dark); opacity: 0.65; font-style: italic; }
+  .map-card-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+  .map-card-cells, .visibility-badge {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 1px; border-radius: 2px;
+  }
+  .map-card-cells { background-color: var(--olive); color: var(--gold); }
+  .visibility-badge { color: #2a7a2a; border: 1px solid #2a7a2a; background: rgba(42,122,42,0.08); font-weight: 700; }
+  .map-card-actions { display: flex; gap: 6px; padding: 0 16px 12px; }
+  .btn-card {
+    flex: 1; padding: 6px; border: 1px solid var(--gold-dark);
+    background: transparent; border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+    cursor: pointer; color: var(--gold-dark);
+  }
+  .btn-card:hover { background: rgba(138,122,80,0.15); }
+
+  .empty-state {
+    grid-column: 1/-1; text-align: center; padding: 80px 20px;
+    color: var(--olive); opacity: 0.65;
+  }
+  .empty-state .icon { font-size: 56px; margin-bottom: 16px; display: block; }
+  .empty-state p { font-style: italic; font-size: 16px; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="topbar-logo">Dofus Rétro</a>
+    <span class="topbar-sep">›</span>
+    <span class="topbar-page">Cartes Communauté</span>
+    <a href="maps.html" class="topbar-link">Mes cartes</a>
+  </div>
+  <div class="topbar-right" id="auth-area"></div>
+</div>
+
+<div class="page-header">
+  <h1>Cartes de la Communauté</h1>
+  <p>Explorez les cartes publiques partagées par les aventuriers.</p>
+</div>
+
+<div class="maps-grid" id="maps-grid"></div>
+
+<script type="module">
+import './js/supabase-api.js';
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+}
+function annotationCount(map) {
+  return map.annotationCount ?? Object.keys(map.cells || {}).length;
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[ch]));
+}
+function openMap(id) {
+  window.location.href = `map-editor.html?id=${id}`;
+}
+function renderMaps(maps) {
+  const grid = document.getElementById('maps-grid');
+  grid.innerHTML = '';
+
+  if (maps.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <span class="icon">🕯️</span>
+      <p>Aucune carte publique pour le moment.</p>
+    </div>`;
+    return;
+  }
+
+  maps.forEach(map => {
+    const count = annotationCount(map);
+    const safeName = escapeHtml(map.name);
+    const safeUsername = escapeHtml(map.username || 'Aventurier');
+    const card = document.createElement('div');
+    card.className = 'map-card';
+    card.addEventListener('click', () => openMap(map.id));
+    card.innerHTML = `
+      <div class="map-card-thumb"></div>
+      <div class="map-card-body">
+        <div class="map-card-name" title="${safeName}">${safeName}</div>
+        <div class="map-card-meta">Par ${safeUsername} · Modifiée le ${fmtDate(map.updatedAt)}</div>
+        <div class="map-card-tags">
+          <span class="map-card-cells">${count} annotation${count !== 1 ? 's' : ''}</span>
+          <span class="visibility-badge">🟢 Public</span>
+        </div>
+      </div>
+      <div class="map-card-actions">
+        <button class="btn-card" onclick="event.stopPropagation(); openMap('${map.id}')">👁️ Voir</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+(async () => {
+  const authArea = document.getElementById('auth-area');
+  const user = await window.DofusApi.currentUser();
+  if (user) {
+    authArea.innerHTML = `
+      <div class="user-chip"><div class="avatar">⚔</div><span>${user.username}</span></div>
+      <button class="btn-sm" onclick="logout()">Déconnexion</button>`;
+  } else {
+    authArea.innerHTML = `<a href="login.html" class="btn-sm">Connexion</a>`;
+  }
+
+  const maps = await window.DofusApi.listPublicMaps().catch(() => []);
+  renderMaps(maps);
+})();
+
+async function logout() {
+  await window.DofusApi.logout();
+  window.location.reload();
+}
+
+window.openMap = openMap;
+window.logout = logout;
+</script>
+</body>
+</html>

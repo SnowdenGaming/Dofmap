@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Dofus Rétro — Éditeur de carte</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background-color: #111;
+    font-family: "Gill Sans", sans-serif;
+    -webkit-user-select: none; user-select: none;
+  }
+
+  /* ── MAP ── */
+  #viewport { position: fixed; inset: 0; overflow: hidden; cursor: grab; }
+  #viewport.grabbing { cursor: grabbing; }
+  #viewport.tool-active { cursor: crosshair; }
+  #viewport.tool-active.grabbing { cursor: grabbing; }
+
+  #map-container {
+    position: absolute; top: 0; left: 0;
+    background-image: url('img/map 1.29.jpg');
+    background-color: #E8DBC8;
+    background-repeat: no-repeat; background-size: auto;
+    width: 5359px; will-change: transform;
+  }
+
+  table { border-spacing: 0; border-collapse: collapse; }
+  table, tr, td { top: 0; left: 0; margin: 0; padding: 0; }
+  td {
+    border-right: 2px solid #B8B18F;
+    border-bottom: 2px solid #B8B18F;
+    height: 21px !important;
+    cursor: crosshair;
+    box-sizing: content-box;
+    position: relative;
+  }
+  td:nth-child(-n+41) { width: 37px; }
+  td:nth-child(n+42)  { width: 38px; }
+  td:hover { outline: 1px solid rgba(255,255,255,0.5); outline-offset: -1px; }
+  td.selected {
+    outline: 2px solid #ffffff;
+    outline-offset: -2px;
+    box-shadow: inset 0 0 0 2px #1f8cff, inset 0 0 12px rgba(31,140,255,0.7);
+  }
+
+  /* Icône dans la cellule */
+  td .cell-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; pointer-events: none; line-height: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(255,255,255,0.7);
+  }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background-color: rgba(42,37,21,0.95);
+    border-bottom: 1px solid rgba(191,176,123,0.25);
+    padding: 0 12px; gap: 10px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .back-link {
+    color: #BFB07B; text-decoration: none; font-size: 12px;
+    font-family: 'Cinzel', serif; letter-spacing: 1px;
+    padding: 4px 10px; border: 1px solid rgba(191,176,123,0.3);
+    border-radius: 3px; white-space: nowrap;
+  }
+  .back-link:hover { background: rgba(191,176,123,0.1); }
+
+  #map-title-input {
+    background: transparent; border: none; border-bottom: 1px solid rgba(191,176,123,0.4);
+    color: #D4C48A; font-family: 'Cinzel', serif; font-size: 14px;
+    letter-spacing: 1px; outline: none; width: 200px; padding: 2px 4px;
+  }
+  #map-title-input:focus { border-bottom-color: #BFB07B; }
+
+  .topbar-center { display: flex; align-items: center; gap: 8px; }
+  #save-status { font-size: 11px; color: #BFB07B; opacity: 0.6; font-style: italic; }
+  #selection-status {
+    font-size: 11px; color: #D4C48A; opacity: 0.8;
+    font-family: 'Cinzel', serif; letter-spacing: 1px; white-space: nowrap;
+  }
+
+  .btn-save {
+    padding: 5px 16px; background: #58533A; color: #D4C48A;
+    border: 1px solid #8A7A50; border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-save:hover { background: #6e6849; }
+  .btn-save:disabled { opacity: 0.5; cursor: default; }
+
+  .visibility-control {
+    display: flex; align-items: center; gap: 6px;
+    color: #BFB07B; font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 1px; white-space: nowrap;
+  }
+  .visibility-control input { accent-color: #2a7a2a; }
+  .readonly-badge {
+    display: none; padding: 4px 8px; border-radius: 3px;
+    border: 1px solid rgba(191,176,123,0.35);
+    color: #D4C48A; font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 1px; white-space: nowrap;
+  }
+  body.readonly #readonly-badge { display: inline-block; }
+  body.readonly #map-title-input { pointer-events: none; opacity: 0.75; }
+  body.readonly #toolbar .tool-btn,
+  body.readonly #toolbar .color-swatch,
+  body.readonly #toolbar .icon-btn,
+  body.readonly #custom-color {
+    opacity: 0.45; pointer-events: none;
+  }
+  body.readonly #tool-pan { opacity: 1; pointer-events: auto; }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  #coords-bar {
+    font-size: 12px; color: #BFB07B; opacity: 0.7;
+    font-family: monospace; white-space: nowrap;
+  }
+  .zoom-control {
+    display: flex; align-items: center; gap: 3px;
+    padding: 2px; border: 1px solid rgba(191,176,123,0.28);
+    border-radius: 4px; background: rgba(20,16,6,0.18);
+  }
+  .zoom-btn {
+    min-width: 28px; height: 24px; padding: 0 7px;
+    background: transparent; color: #D4C48A;
+    border: 1px solid transparent; border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 11px;
+    cursor: pointer;
+  }
+  .zoom-btn:hover { background: rgba(191,176,123,0.12); border-color: rgba(191,176,123,0.3); }
+  #zoom-label {
+    min-width: 44px; text-align: center;
+    color: #BFB07B; font: 12px monospace;
+  }
+
+  /* ── TOOLBAR GAUCHE ── */
+  #toolbar {
+    position: fixed; left: 0; top: 40px; bottom: 0; z-index: 150;
+    width: 64px;
+    background-color: rgba(42,37,21,0.95);
+    border-right: 1px solid rgba(191,176,123,0.2);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0; gap: 4px; overflow-y: auto;
+  }
+
+  .tool-sep {
+    width: 40px; height: 1px;
+    background: rgba(191,176,123,0.2);
+    margin: 4px 0;
+  }
+  .tool-label {
+    font-family: 'Cinzel', serif; font-size: 8px;
+    color: #8A7A50; letter-spacing: 1px;
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  .tool-btn {
+    width: 44px; height: 44px; border-radius: 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+    gap: 2px; background: transparent;
+  }
+  .tool-btn:hover { background: rgba(191,176,123,0.12); }
+  .tool-btn.active { background: rgba(191,176,123,0.2); border-color: #8A7A50; }
+  .tool-btn .icon-lbl { font-size: 18px; line-height: 1; }
+  .tool-btn .tool-name { font-size: 7px; color: #8A7A50; font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tool-btn.active .tool-name { color: #BFB07B; }
+
+  /* ── COLOR PALETTE ── */
+  .color-grid {
+    display: grid; grid-template-columns: repeat(2, 18px); gap: 3px;
+    padding: 4px;
+  }
+  .color-swatch {
+    width: 18px; height: 18px; border-radius: 3px;
+    cursor: pointer; border: 1px solid rgba(0,0,0,0.3);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .color-swatch:hover { transform: scale(1.2); }
+  .color-swatch.active { box-shadow: 0 0 0 2px #BFB07B; transform: scale(1.15); }
+
+  /* Couleur personnalisée */
+  #custom-color-wrap { position: relative; }
+  #custom-color {
+    width: 38px; height: 22px; border-radius: 3px; border: 1px solid #8A7A50;
+    cursor: pointer; padding: 0; background: none;
+  }
+
+  /* ── ICON GRID ── */
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+    padding: 4px; width: 58px;
+  }
+  .icon-btn {
+    width: 26px; height: 26px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer;
+    border: 1px solid transparent; background: transparent;
+    transition: background 0.1s;
+  }
+  .icon-btn:hover { background: rgba(191,176,123,0.15); }
+  .icon-btn.active { background: rgba(191,176,123,0.25); border-color: #8A7A50; }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position: fixed; z-index: 300; display: none;
+    background: rgba(0,0,0,0.78); color: #fff;
+    border-radius: 5px; padding: 4px 9px; font-size: 12px;
+    pointer-events: none; white-space: nowrap;
+  }
+
+  /* ── NOTE POPUP ── */
+  #note-popup {
+    display: none; position: fixed; z-index: 400;
+    background: #2A2515; border: 1px solid #8A7A50;
+    border-radius: 5px; padding: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    width: 200px;
+  }
+  #note-input {
+    width: 100%; background: #3A3520; border: 1px solid #8A7A50;
+    border-radius: 3px; padding: 6px 8px; color: #D4C48A;
+    font-family: serif; font-size: 13px; resize: none; outline: none;
+    height: 60px;
+  }
+  .note-popup-btns { display: flex; gap: 6px; margin-top: 6px; }
+  .btn-note {
+    flex: 1; padding: 4px; background: #58533A; color: #BFB07B;
+    border: 1px solid #8A7A50; border-radius: 3px; cursor: pointer;
+    font-size: 11px; font-family: 'Cinzel', serif; letter-spacing: 1px;
+  }
+  .btn-note.cancel { background: transparent; color: #8A7A50; }
+
+  /* ── SEARCH ── */
+  #search-box {
+    position: fixed; bottom: 16px; left: 80px; z-index: 200;
+    background: rgba(88,83,58,0.92);
+    border-radius: 6px; padding: 5px 8px;
+    display: flex; gap: 5px; align-items: center;
+  }
+  #search-box label { color: #BFB07B; font-size: 12px; font-weight: bold; }
+  #search-box input {
+    background: #BFB07B; border: none; border-radius: 3px;
+    padding: 2px 5px; width: 48px; font-size: 12px;
+    text-align: center; color: #333;
+  }
+  #go-btn {
+    background: #BFB07B; border: none; border-radius: 3px;
+    padding: 2px 8px; cursor: pointer; font-size: 12px;
+    font-weight: bold; color: #58533A;
+  }
+  #go-btn:hover { background: #d4c48a; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="topbar-left">
+    <a href="maps.html" class="back-link">← Mes cartes</a>
+    <input id="map-title-input" type="text" value="Chargement…" maxlength="60" title="Cliquer pour renommer">
+  </div>
+  <div class="topbar-center">
+    <label class="visibility-control" id="visibility-control">
+      <input id="map-public-toggle" type="checkbox">
+      Public
+    </label>
+    <span class="readonly-badge" id="readonly-badge">Lecture seule</span>
+    <span id="selection-status">0 case</span>
+    <span id="save-status">Non sauvegardé</span>
+    <button class="btn-save" id="btn-save">💾 Sauvegarder</button>
+  </div>
+  <div class="topbar-right">
+    <div class="zoom-control" title="Molette pour zoomer">
+      <button class="zoom-btn" id="zoom-out" type="button">-</button>
+      <span id="zoom-label">100%</span>
+      <button class="zoom-btn" id="zoom-in" type="button">+</button>
+      <button class="zoom-btn" id="zoom-reset" type="button">100</button>
+    </div>
+    <span id="coords-bar">[–, –]</span>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <span class="tool-label">Outil</span>
+
+  <button class="tool-btn active" id="tool-pan" onclick="setTool('pan')" title="Déplacer la carte">
+    <span class="icon-lbl">✋</span>
+    <span class="tool-name">Pan</span>
+  </button>
+  <button class="tool-btn" id="tool-color" onclick="setTool('color')" title="Colorier une case">
+    <span class="icon-lbl">🎨</span>
+    <span class="tool-name">Couleur</span>
+  </button>
+  <button class="tool-btn" id="tool-icon" onclick="setTool('icon')" title="Ajouter une icône">
+    <span class="icon-lbl">📍</span>
+    <span class="tool-name">Icône</span>
+  </button>
+  <button class="tool-btn" id="tool-note" onclick="setTool('note')" title="Ajouter une note">
+    <span class="icon-lbl">📝</span>
+    <span class="tool-name">Note</span>
+  </button>
+
+  <div class="tool-sep"></div>
+  <span class="tool-label">Couleurs</span>
+  <div class="color-grid" id="color-grid"></div>
+  <input type="color" id="custom-color" value="#ff6600" title="Couleur personnalisée">
+
+  <div class="tool-sep"></div>
+  <span class="tool-label">Icônes</span>
+  <div class="icon-grid" id="icon-grid"></div>
+</div>
+
+<!-- MAP -->
+<div id="viewport" style="left:64px; top:40px;">
+  <div id="map-container">
+    <table id="map-table"><tbody id="map-body"></tbody></table>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div id="search-box">
+  <label>X</label><input id="sx" type="number" value="0" min="-91" max="43">
+  <label>Y</label><input id="sy" type="number" value="0" min="-120" max="48">
+  <button id="go-btn">→</button>
+</div>
+
+<!-- TOOLTIP / NOTE POPUP -->
+<div id="tooltip"></div>
+<div id="note-popup">
+  <textarea id="note-input" placeholder="Votre note…"></textarea>
+  <div class="note-popup-btns">
+    <button class="btn-note" id="btn-note-ok">OK</button>
+    <button class="btn-note cancel" id="btn-note-cancel">Annuler</button>
+  </div>
+</div>
+
+<script type="module">
+import './js/supabase-api.js';
+
+(function () {
+
+/* ── Paramètres grille ── */
+const X_MIN = -91, X_MAX = 43, Y_MIN = -120, Y_MAX = 48;
+const COLS  = X_MAX - X_MIN + 1, ROWS = Y_MAX - Y_MIN + 1;
+const PITCH_N = 39, PITCH_W = 40, ROW_PITCH = 23;
+
+const colLeft = [0];
+for (let c = 1; c < COLS; c++)
+  colLeft[c] = colLeft[c-1] + (c-1 < 41 ? PITCH_N : PITCH_W);
+
+function cellCenter(ci, ri) {
+  return { cx: colLeft[ci] + (ci < 41 ? 37 : 38)/2, cy: ri * ROW_PITCH + 21/2 };
+}
+
+/* ── État de la map ── */
+const mapId   = new URLSearchParams(location.search).get('id');
+let mapData   = null;
+let cellData  = {};   // "x,y" → { color, icon, note }
+let dirty     = false;
+let readonly  = false;
+let currentUser = null;
+
+/* ── Outil actif ── */
+let currentTool  = 'pan';
+let currentColor = 'rgba(255,100,0,0.5)';
+let currentIcon  = '⚔️';
+let selectedKeys = new Set();
+let selectionAnchorKey = null;
+let undoStack = [];
+const MAX_UNDO = 50;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[ch]));
+}
+
+/* ── Palette couleurs ── */
+const COLORS = [
+  'rgba(255,80,80,0.55)',   'rgba(255,160,0,0.55)',
+  'rgba(255,230,0,0.55)',   'rgba(80,200,80,0.55)',
+  'rgba(0,180,255,0.55)',   'rgba(130,80,255,0.55)',
+  'rgba(255,80,200,0.55)',  'rgba(255,255,255,0.35)',
+  'rgba(0,0,0,0.45)',       'rgba(191,176,123,0.55)',
+];
+const ICONS = ['⚔️','🛡️','💀','⭐','🏠','🔑','💰','🌿','🐉','🚩','❌','✅'];
+
+/* ── Init palette ── */
+const colorGrid = document.getElementById('color-grid');
+COLORS.forEach((c, i) => {
+  const sw = document.createElement('div');
+  sw.className = 'color-swatch' + (i === 0 ? ' active' : '');
+  sw.style.backgroundColor = c;
+  sw.dataset.color = c;
+  sw.title = c;
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    currentColor = c;
+    setTool('color');
+    if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
+  });
+  colorGrid.appendChild(sw);
+});
+currentColor = COLORS[0];
+
+document.getElementById('custom-color').addEventListener('input', function () {
+  const hex = this.value;
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  currentColor = `rgba(${r},${g},${b},0.55)`;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  setTool('color');
+  if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
+});
+
+const iconGrid = document.getElementById('icon-grid');
+ICONS.forEach((ic, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'icon-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = ic;
+  btn.title = ic;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentIcon = ic;
+    setTool('icon');
+    if (selectedKeys.size) applyToolToKeys('icon', Array.from(selectedKeys));
+  });
+  iconGrid.appendChild(btn);
+});
+
+/* ── Outil ── */
+function setTool(tool) {
+  if (readonly && tool !== 'pan') tool = 'pan';
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tool-' + tool);
+  if (el) el.classList.add('active');
+  const vp = document.getElementById('viewport');
+  vp.classList.toggle('tool-active', tool !== 'pan');
+  updateCursor();
+}
+window.setTool = setTool;
+
+/* ── Build table ── */
+const tbody = document.getElementById('map-body');
+const frag  = document.createDocumentFragment();
+for (let ri = 0; ri < ROWS; ri++) {
+  const tr = document.createElement('tr');
+  for (let ci = 0; ci < COLS; ci++) {
+    const td = document.createElement('td');
+    td.dataset.x = X_MIN + ci;
+    td.dataset.y = Y_MIN + ri;
+    tr.appendChild(td);
+  }
+  frag.appendChild(tr);
+}
+tbody.appendChild(frag);
+
+/* ── Rendu d'une cellule ── */
+function renderCell(td, key) {
+  const d = cellData[key];
+  td.style.backgroundColor = d?.color || '';
+  td.title = d?.note || '';
+  let inner = '';
+  if (d?.icon) inner += `<span class="cell-icon" title="${escapeHtml(d.note || '')}">${escapeHtml(d.icon)}</span>`;
+  td.innerHTML = inner;
+}
+
+function applyAllCells() {
+  Object.entries(cellData).forEach(([key, _]) => {
+    const [x, y] = key.split(',').map(Number);
+    const ci = x - X_MIN, ri = y - Y_MIN;
+    if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
+    const td = tbody.rows[ri]?.cells[ci];
+    if (td) renderCell(td, key);
+  });
+}
+
+function renderAllCells() {
+  for (let ri = 0; ri < ROWS; ri++) {
+    for (let ci = 0; ci < COLS; ci++) {
+      const td = tbody.rows[ri]?.cells[ci];
+      if (!td) continue;
+      const key = `${X_MIN + ci},${Y_MIN + ri}`;
+      renderCell(td, key);
+    }
+  }
+  renderSelection();
+}
+
+function pushUndoState() {
+  undoStack.push(JSON.parse(JSON.stringify(cellData)));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+}
+
+function undoLastChange() {
+  if (readonly || undoStack.length === 0) return;
+  cellData = undoStack.pop();
+  renderAllCells();
+  markDirty();
+}
+
+function keyToCoords(key) {
+  const [x, y] = key.split(',').map(Number);
+  return { x, y };
+}
+
+function getCellByKey(key) {
+  const { x, y } = keyToCoords(key);
+  const ci = x - X_MIN, ri = y - Y_MIN;
+  if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return null;
+  return tbody.rows[ri]?.cells[ci] || null;
+}
+
+function updateSelectionStatus() {
+  const count = selectedKeys.size;
+  document.getElementById('selection-status').textContent = `${count} case${count > 1 ? 's' : ''}`;
+}
+
+function renderSelection() {
+  document.querySelectorAll('td.selected').forEach(td => td.classList.remove('selected'));
+  selectedKeys.forEach(key => getCellByKey(key)?.classList.add('selected'));
+  updateSelectionStatus();
+}
+
+function clearSelection() {
+  selectedKeys.clear();
+  selectionAnchorKey = null;
+  renderSelection();
+}
+
+function toggleCellSelection(key) {
+  if (selectedKeys.has(key)) selectedKeys.delete(key);
+  else selectedKeys.add(key);
+  selectionAnchorKey = key;
+  renderSelection();
+}
+
+function selectOneCell(key) {
+  selectedKeys = new Set([key]);
+  selectionAnchorKey = key;
+  renderSelection();
+}
+
+function selectRangeTo(key, additive) {
+  const anchor = selectionAnchorKey || key;
+  const a = keyToCoords(anchor), b = keyToCoords(key);
+  if (!additive) selectedKeys.clear();
+  const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x);
+  const y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y);
+  for (let y = y1; y <= y2; y++) {
+    for (let x = x1; x <= x2; x++) {
+      selectedKeys.add(`${x},${y}`);
+    }
+  }
+  renderSelection();
+}
+
+function selectAllCells() {
+  selectedKeys.clear();
+  for (let y = Y_MIN; y <= Y_MAX; y++) {
+    for (let x = X_MIN; x <= X_MAX; x++) {
+      selectedKeys.add(`${x},${y}`);
+    }
+  }
+  selectionAnchorKey = `${X_MIN},${Y_MIN}`;
+  renderSelection();
+}
+
+function handleSelectionClick(key, e) {
+  if (e.shiftKey) {
+    selectRangeTo(key, e.ctrlKey || e.metaKey);
+    return true;
+  }
+  if (e.ctrlKey || e.metaKey) {
+    toggleCellSelection(key);
+    return true;
+  }
+  selectOneCell(key);
+  if (currentTool === 'pan') return true;
+  return false;
+}
+
+function actionKeysFor(targetKey) {
+  return selectedKeys.size ? Array.from(selectedKeys) : [targetKey];
+}
+
+function applyToolToKeys(tool, keys) {
+  if (!keys.length) return;
+  pushUndoState();
+  keys.forEach(key => {
+    const td = getCellByKey(key);
+    if (!td) return;
+    if (tool === 'color') {
+      cellData[key] = { ...cellData[key], color: currentColor };
+      renderCell(td, key);
+    } else if (tool === 'icon') {
+      cellData[key] = { ...cellData[key], icon: currentIcon };
+      renderCell(td, key);
+    } else if (tool === 'erase') {
+      delete cellData[key];
+      td.style.backgroundColor = '';
+      td.innerHTML = '';
+      td.title = '';
+    }
+  });
+  renderSelection();
+  markDirty();
+}
+
+function deleteSelectionOrHoveredCell(fallbackKey = null) {
+  if (readonly) return;
+  const keys = selectedKeys.size ? Array.from(selectedKeys) : (fallbackKey || hoveredKey ? [fallbackKey || hoveredKey] : []);
+  if (!keys.length) return;
+  applyToolToKeys('erase', keys);
+}
+
+/* ── Pan ── */
+const mc = document.getElementById('map-container');
+const vp = document.getElementById('viewport');
+let tx = 0, ty = 0, zoom = 1;
+const MIN_ZOOM = 0.5, MAX_ZOOM = 2.5, ZOOM_STEP = 0.15;
+
+function applyTransform() {
+  mc.style.transformOrigin = '0 0';
+  mc.style.transform = `translate(${tx}px,${ty}px) scale(${zoom})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+}
+function centerOn(x, y) {
+  const ci = x - X_MIN, ri = y - Y_MIN;
+  if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
+  const { cx, cy } = cellCenter(ci, ri);
+  tx = Math.round(window.innerWidth/2 - 32 - cx * zoom);
+  ty = Math.round(window.innerHeight/2 - 20 - cy * zoom);
+  applyTransform();
+}
+
+function setZoom(nextZoom, anchorX = window.innerWidth / 2, anchorY = window.innerHeight / 2) {
+  const oldZoom = zoom;
+  zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
+  if (zoom === oldZoom) return;
+
+  const mapX = (anchorX - tx) / oldZoom;
+  const mapY = (anchorY - ty) / oldZoom;
+  tx = Math.round(anchorX - mapX * zoom);
+  ty = Math.round(anchorY - mapY * zoom);
+  applyTransform();
+}
+
+let dragging = false, dragMoved = false, ox, oy, tx0, ty0;
+
+function updateCursor() {
+  if (dragging) vp.style.cursor = 'grabbing';
+  else vp.style.cursor = currentTool === 'pan' ? 'grab' : 'crosshair';
+}
+
+vp.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  dragMoved = false;
+  dragging = true;
+  ox = e.clientX; oy = e.clientY; tx0 = tx; ty0 = ty;
+  vp.classList.add('grabbing');
+  updateCursor();
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - ox, dy = e.clientY - oy;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+  tx = tx0 + dx; ty = ty0 + dy; applyTransform();
+});
+window.addEventListener('mouseup', () => {
+  dragging = false;
+  vp.classList.remove('grabbing');
+  updateCursor();
+  setTimeout(() => { dragMoved = false; }, 0);
+});
+
+document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + ZOOM_STEP));
+document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - ZOOM_STEP));
+document.getElementById('zoom-reset').addEventListener('click', () => setZoom(1));
+vp.addEventListener('wheel', e => {
+  e.preventDefault();
+  setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), e.clientX, e.clientY);
+}, { passive: false });
+
+/* ── Tooltip ── */
+const tooltip   = document.getElementById('tooltip');
+const coordsBar = document.getElementById('coords-bar');
+let hoveredKey = null;
+
+document.getElementById('map-table').addEventListener('mouseover', e => {
+  const td = e.target.closest('td[data-x]'); if (!td) return;
+  const x = td.dataset.x, y = td.dataset.y;
+  const key = `${x},${y}`;
+  hoveredKey = key;
+  const d = cellData[key];
+  let txt = `[${x}, ${y}]`;
+  if (d?.note) txt += ` — ${d.note}`;
+  tooltip.textContent = txt;
+  tooltip.style.display = 'block';
+  coordsBar.textContent = `[${x}, ${y}]`;
+});
+document.getElementById('map-table').addEventListener('mouseout', e => {
+  if (!e.target.closest('td[data-x]')) return;
+  hoveredKey = null;
+  tooltip.style.display = 'none'; coordsBar.textContent = '[–, –]';
+});
+window.addEventListener('mousemove', e => {
+  tooltip.style.left = (e.clientX + 14) + 'px';
+  tooltip.style.top  = (e.clientY - 30) + 'px';
+});
+
+/* ── Click sur cellule ── */
+let noteTd = null, noteKeys = [];
+
+document.getElementById('map-table').addEventListener('click', e => {
+  if (dragMoved) { dragMoved = false; return; }
+  const td = e.target.closest('td[data-x]'); if (!td) return;
+  if (readonly) return;
+  const x = +td.dataset.x, y = +td.dataset.y;
+  const key = `${x},${y}`;
+  if (handleSelectionClick(key, e)) return;
+  const keys = actionKeysFor(key);
+
+  if (currentTool === 'color') {
+    applyToolToKeys('color', keys);
+  } else if (currentTool === 'icon') {
+    applyToolToKeys('icon', keys);
+  } else if (currentTool === 'note') {
+    openNotePopup(td, keys, e);
+  } else if (currentTool === 'erase') {
+    applyToolToKeys('erase', keys);
+  }
+});
+
+document.getElementById('map-table').addEventListener('contextmenu', e => {
+  const td = e.target.closest('td[data-x]'); if (!td) return;
+  e.preventDefault();
+  if (readonly) return;
+  const key = `${td.dataset.x},${td.dataset.y}`;
+  clearSelection();
+  deleteSelectionOrHoveredCell(key);
+});
+
+/* ── Note popup ── */
+const notePopup = document.getElementById('note-popup');
+const noteInput = document.getElementById('note-input');
+
+function openNotePopup(td, keys, e) {
+  noteTd = td; noteKeys = keys;
+  noteInput.value = keys.length === 1 ? (cellData[keys[0]]?.note || '') : '';
+  noteInput.placeholder = keys.length > 1 ? `Note pour ${keys.length} cases...` : 'Votre note...';
+  notePopup.style.display = 'block';
+  const px = Math.min(e.clientX + 10, window.innerWidth - 220);
+  const py = Math.min(e.clientY + 10, window.innerHeight - 130);
+  notePopup.style.left = px + 'px';
+  notePopup.style.top  = py + 'px';
+  setTimeout(() => noteInput.focus(), 50);
+}
+
+document.getElementById('btn-note-ok').addEventListener('click', () => {
+  const val = noteInput.value.trim();
+  if (noteKeys.length) {
+    pushUndoState();
+    noteKeys.forEach(key => {
+      const td = getCellByKey(key);
+      if (!td) return;
+      if (val) cellData[key] = { ...cellData[key], note: val };
+      else if (cellData[key]) delete cellData[key].note;
+      renderCell(td, key);
+    });
+    renderSelection();
+    markDirty();
+  }
+  notePopup.style.display = 'none'; noteTd = null; noteKeys = [];
+});
+document.getElementById('btn-note-cancel').addEventListener('click', () => {
+  notePopup.style.display = 'none'; noteTd = null; noteKeys = [];
+});
+noteInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('btn-note-ok').click(); }
+  if (e.key === 'Escape') document.getElementById('btn-note-cancel').click();
+});
+
+/* ── Save ── */
+function markDirty() {
+  if (readonly) return;
+  dirty = true;
+  document.getElementById('save-status').textContent = 'Modifications non sauvegardées';
+  document.getElementById('save-status').style.color = '#ff9944';
+}
+
+async function saveMap() {
+  if (readonly) return;
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  const name = document.getElementById('map-title-input').value.trim() || 'Sans titre';
+  const isPublic = document.getElementById('map-public-toggle').checked;
+  const result = await window.DofusApi.updateMap(mapId, { name, cells: cellData, isPublic })
+    .then(() => ({ ok: true }))
+    .catch(() => ({ ok: false }));
+  btn.disabled = false;
+  if (result.ok) {
+    dirty = false;
+    const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    document.getElementById('save-status').textContent = `Sauvegardé à ${now}`;
+    document.getElementById('save-status').style.color = '#88cc88';
+  }
+}
+
+document.getElementById('btn-save').addEventListener('click', saveMap);
+document.addEventListener('keydown', e => {
+  const tag = e.target?.tagName?.toLowerCase();
+  const isTyping = tag === 'input' || tag === 'textarea';
+  if (!isTyping && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+    e.preventDefault();
+    undoLastChange();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveMap(); }
+  if (!isTyping && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+    e.preventDefault();
+    selectAllCells();
+  }
+  if (!isTyping && (e.key === 'Delete' || e.key === 'Del')) {
+    e.preventDefault();
+    deleteSelectionOrHoveredCell();
+  }
+  if (!isTyping && e.key === 'Escape') clearSelection();
+});
+
+/* ── Renommer ── */
+document.getElementById('map-title-input').addEventListener('input', markDirty);
+document.getElementById('map-public-toggle').addEventListener('change', markDirty);
+
+function applyReadonlyMode() {
+  readonly = !!mapData.readonly;
+  document.body.classList.toggle('readonly', readonly);
+  document.getElementById('btn-save').disabled = readonly;
+  document.getElementById('visibility-control').style.display = readonly ? 'none' : 'flex';
+  document.getElementById('map-title-input').readOnly = readonly;
+  if (readonly) {
+    setTool('pan');
+    document.getElementById('save-status').textContent = 'Lecture seule';
+    document.getElementById('save-status').style.color = '#D4C48A';
+  }
+}
+
+/* ── Search ── */
+document.getElementById('go-btn').addEventListener('click', () => {
+  const x = parseInt(document.getElementById('sx').value);
+  const y = parseInt(document.getElementById('sy').value);
+  if (!isNaN(x) && !isNaN(y)) centerOn(x, y);
+});
+['sx','sy'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('go-btn').click();
+  })
+);
+
+/* ── Warn avant de quitter sans sauvegarder ── */
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ── Chargement de la map ── */
+(async () => {
+  if (!mapId) { window.location.href = 'maps.html'; return; }
+
+  currentUser = await window.DofusApi.currentUser();
+
+  mapData = await window.DofusApi.getMap(mapId).catch(() => null);
+  if (!mapData) { window.location.href = currentUser ? 'maps.html' : 'community.html'; return; }
+  cellData = mapData.cells || {};
+  document.getElementById('map-title-input').value = mapData.name;
+  document.getElementById('map-public-toggle').checked = !!mapData.isPublic;
+  document.title = `${mapData.name} — Dofus Rétro`;
+  document.querySelector('.back-link').href = mapData.readonly ? 'community.html' : 'maps.html';
+  document.querySelector('.back-link').textContent = mapData.readonly ? '← Communauté' : '← Mes cartes';
+  applyReadonlyMode();
+
+  // Applique les cellules sauvegardées
+  requestAnimationFrame(() => {
+    applyAllCells();
+    requestAnimationFrame(() => centerOn(0, 0));
+  });
+
+  if (!readonly) {
+    document.getElementById('save-status').textContent = 'À jour';
+    document.getElementById('save-status').style.color = '#88cc88';
+  }
+})();
+
+})();
+</script>
+</body>
+</html>

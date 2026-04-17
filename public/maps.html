@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Dofus Rétro — Mes Cartes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+
+  :root {
+    --parchment:  #E8DBC8;
+    --parchment2: #D9C9AE;
+    --dark:       #3A3520;
+    --olive:      #58533A;
+    --gold:       #BFB07B;
+    --gold-light: #D4C48A;
+    --gold-dark:  #8A7A50;
+    --ink:        #2A2515;
+    --red:        #8E0000;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--parchment);
+    color: var(--ink);
+    font-family: 'IM Fell English', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  /* ─── TOPBAR ─── */
+  #topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 24px;
+    background-color: var(--olive);
+    border-bottom: 2px solid var(--gold-dark);
+    height: 44px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo {
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+    color: var(--gold-light); letter-spacing: 2px; text-decoration: none;
+  }
+  .topbar-sep { color: var(--gold-dark); opacity: 0.5; }
+  .topbar-page { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .user-chip {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold);
+  }
+  .user-chip .avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background-color: var(--dark); border: 1px solid var(--gold-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+  .btn-sm {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px;
+    padding: 4px 12px; border-radius: 3px; cursor: pointer; border: none;
+    text-decoration: none; transition: background 0.2s;
+  }
+  .btn-outline { background: transparent; color: var(--gold-dark); border: 1px solid var(--gold-dark); }
+  .btn-outline:hover { background: rgba(191,176,123,0.15); }
+  .topbar-link {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px;
+    color: var(--gold); text-decoration: none; padding: 4px 8px;
+    border-radius: 3px;
+  }
+  .topbar-link:hover { background: rgba(191,176,123,0.12); }
+
+  /* ─── HERO ─── */
+  .page-header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid rgba(138,122,80,0.3);
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .page-header h1 {
+    font-family: 'Cinzel', serif; font-size: 28px; font-weight: 700;
+    color: var(--olive); letter-spacing: 2px;
+  }
+  .page-header p { font-style: italic; color: var(--dark); opacity: 0.7; margin-top: 6px; font-size: 15px; }
+  .btn-create {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    background-color: var(--olive); color: var(--gold-light);
+    border: 1px solid var(--gold-dark); border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn-create:hover { background-color: #6e6849; }
+  .btn-create:active { transform: scale(0.98); }
+
+  /* ─── GRID ─── */
+  .maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px; padding: 32px 40px 60px;
+  }
+
+  .map-card {
+    position: relative;
+    background-color: var(--parchment2);
+    border: 1px solid var(--gold-dark); border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    cursor: pointer;
+  }
+  .map-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(58,53,32,0.22); border-color: var(--gold); }
+
+  .map-card-thumb {
+    height: 110px;
+    background-color: var(--olive);
+    background-image: url('img/map 1.29.jpg');
+    background-size: cover;
+    background-position: 67% 72%;
+    filter: brightness(0.6) saturate(0.7);
+    position: relative;
+  }
+  .map-card-thumb::after {
+    content: '🗺️';
+    position: absolute; bottom: 8px; right: 10px;
+    font-size: 24px; filter: none;
+  }
+
+  .map-card-body { padding: 14px 16px 12px; }
+  .map-card-name {
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+    color: var(--olive); margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .map-card-meta { font-size: 12px; color: var(--dark); opacity: 0.6; font-style: italic; }
+  .map-card-cells {
+    display: inline-block; margin-top: 8px;
+    padding: 2px 8px; font-size: 10px;
+    background-color: var(--olive); color: var(--gold);
+    font-family: 'Cinzel', serif; letter-spacing: 1px; border-radius: 2px;
+  }
+
+  .map-card-actions {
+    display: flex; gap: 6px;
+    padding: 0 16px 12px;
+  }
+  .btn-card {
+    flex: 1; padding: 6px; border: 1px solid var(--gold-dark);
+    background: transparent; border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+    cursor: pointer; color: var(--gold-dark); transition: background 0.15s;
+  }
+  .btn-card:hover { background: rgba(138,122,80,0.15); }
+  .btn-card.danger:hover { background: rgba(142,0,0,0.1); color: var(--red); border-color: var(--red); }
+
+  /* ─── BADGE VISIBILITÉ ─── */
+  .visibility-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 6px; padding: 2px 8px; border-radius: 2px;
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+    font-weight: 700; border: 1px solid;
+  }
+  .visibility-badge.public  { color: #2a7a2a; border-color: #2a7a2a; background: rgba(42,122,42,0.08); }
+  .visibility-badge.private { color: var(--gold-dark); border-color: var(--gold-dark); background: transparent; }
+  .map-card-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  /* ─── TOGGLE SWITCH ─── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 18px; padding-top: 16px;
+    border-top: 1px solid rgba(138,122,80,0.3);
+  }
+  .toggle-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; color: var(--gold-dark); text-transform: uppercase; }
+  .toggle-switch { position: relative; width: 44px; height: 22px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0; border-radius: 22px;
+    background: var(--parchment2); border: 1px solid var(--gold-dark);
+    cursor: pointer; transition: background 0.2s;
+  }
+  .toggle-track::after {
+    content: ''; position: absolute;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gold-dark); top: 2px; left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-track { background: rgba(42,122,42,0.3); border-color: #2a7a2a; }
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(22px); background: #2a7a2a; }
+  .toggle-hint { font-size: 12px; font-style: italic; color: var(--dark); opacity: 0.6; margin-top: 6px; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center; padding: 80px 20px;
+    color: var(--olive); opacity: 0.6;
+  }
+  .empty-state .icon { font-size: 56px; margin-bottom: 16px; display: block; }
+  .empty-state p { font-style: italic; font-size: 16px; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(20,16,6,0.65);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--parchment); border: 1px solid var(--gold-dark);
+    border-radius: 4px; padding: 32px; width: 380px; max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h2 {
+    font-family: 'Cinzel', serif; font-size: 18px; color: var(--olive);
+    letter-spacing: 2px; margin-bottom: 20px;
+  }
+  .modal label {
+    display: block; font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 2px; color: var(--gold-dark); margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .modal input {
+    width: 100%; padding: 10px 12px;
+    background: var(--parchment2); border: 1px solid var(--gold-dark);
+    border-radius: 3px; font-family: 'IM Fell English', serif; font-size: 15px;
+    color: var(--ink); outline: none;
+  }
+  .modal input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(191,176,123,0.25); }
+  .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-confirm {
+    flex: 1; padding: 10px; background: var(--olive); color: var(--gold-light);
+    border: 1px solid var(--gold-dark); border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer;
+  }
+  .btn-confirm:hover { background: #6e6849; }
+  .btn-cancel {
+    padding: 10px 18px; background: transparent; color: var(--gold-dark);
+    border: 1px solid var(--gold-dark); border-radius: 3px;
+    font-family: 'Cinzel', serif; font-size: 12px; cursor: pointer;
+  }
+  .btn-cancel:hover { background: rgba(138,122,80,0.1); }
+
+  /* ─── LOGIN PROMPT ─── */
+  #login-prompt {
+    display: none; text-align: center; padding: 80px 20px; color: var(--olive);
+  }
+  #login-prompt .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+  #login-prompt p { font-style: italic; margin-bottom: 20px; }
+  #login-prompt a {
+    font-family: 'Cinzel', serif; font-size: 13px;
+    padding: 10px 24px; background: var(--olive); color: var(--gold);
+    border-radius: 3px; text-decoration: none; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="topbar-logo">Dofus Rétro</a>
+    <span class="topbar-sep">›</span>
+    <span class="topbar-page">Mes Cartes</span>
+    <a href="community.html" class="topbar-link">Communauté</a>
+  </div>
+  <div class="topbar-right" id="auth-area"></div>
+</div>
+
+<div class="page-header">
+  <div>
+    <h1>Mes Cartes</h1>
+    <p>Créez et personnalisez vos cartes du Monde des Douze</p>
+  </div>
+  <button class="btn-create" id="btn-new-map">+ Nouvelle carte</button>
+</div>
+
+<div id="login-prompt">
+  <span class="icon">🔒</span>
+  <p>Connectez-vous pour accéder à vos cartes.</p>
+  <a href="login.html">Se connecter</a>
+</div>
+
+<div class="maps-grid" id="maps-grid" style="display:none"></div>
+
+<!-- Modal création -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <h2>Nouvelle Carte</h2>
+    <label>Nom de la carte</label>
+    <input id="map-name-input" type="text" placeholder="Ex : Farm Astrub, Route Bonta…" maxlength="60">
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Carte publique</div>
+        <div class="toggle-hint">Visible dans les cartes de la communauté.</div>
+      </div>
+      <label class="toggle-switch" title="Rendre la carte publique">
+        <input id="map-public-input" type="checkbox">
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-confirm" id="btn-confirm-create">Créer</button>
+      <button class="btn-cancel" id="btn-cancel-create">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal suppression -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <h2>Supprimer la carte ?</h2>
+    <p style="font-style:italic; color:var(--dark); opacity:0.75; font-size:14px;">
+      Cette action est irréversible. Toutes les annotations seront perdues.
+    </p>
+    <div class="modal-buttons">
+      <button class="btn-confirm" id="btn-confirm-delete" style="background:#8E0000; border-color:#8E0000;">Supprimer</button>
+      <button class="btn-cancel" id="btn-cancel-delete">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import './js/supabase-api.js';
+
+let currentUser = null;
+let deleteTargetId = null;
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+}
+function cellCount(cells) {
+  return Object.keys(cells || {}).length;
+}
+function annotationCount(map) {
+  return map.annotationCount ?? cellCount(map.cells);
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[ch]));
+}
+
+async function loadMaps() {
+  return window.DofusApi.listMaps().catch(() => []);
+}
+
+function renderMaps(maps) {
+  const grid = document.getElementById('maps-grid');
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  if (maps.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <span class="icon">📜</span>
+      <p>Aucune carte pour l'instant.<br>Créez-en une pour commencer !</p>
+    </div>`;
+    return;
+  }
+
+  maps.forEach(map => {
+    const count = annotationCount(map);
+    const safeName = escapeHtml(map.name);
+    const card = document.createElement('div');
+    card.className = 'map-card';
+    card.innerHTML = `
+      <div class="map-card-thumb"></div>
+      <div class="map-card-body">
+        <div class="map-card-name" title="${safeName}">${safeName}</div>
+        <div class="map-card-meta">Créée le ${fmtDate(map.createdAt)} · Modifiée le ${fmtDate(map.updatedAt)}</div>
+        <div class="map-card-tags">
+          <span class="map-card-cells">${count} annotation${count !== 1 ? 's' : ''}</span>
+          <span class="visibility-badge ${map.isPublic ? 'public' : 'private'}">${map.isPublic ? '🟢 Public' : '🟡 Privé'}</span>
+        </div>
+      </div>
+      <div class="map-card-actions">
+        <button class="btn-card" onclick="openMap('${map.id}')">✏️ Ouvrir</button>
+        <button class="btn-card" onclick="toggleVisibility('${map.id}', ${map.isPublic ? 'false' : 'true'}, event)">${map.isPublic ? 'Privé' : 'Public'}</button>
+        <button class="btn-card danger" onclick="confirmDelete('${map.id}', event)">🗑 Supprimer</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function openMap(id) {
+  window.location.href = `map-editor.html?id=${id}`;
+}
+
+function confirmDelete(id, e) {
+  e.stopPropagation();
+  deleteTargetId = id;
+  document.getElementById('modal-delete').classList.add('open');
+}
+
+async function toggleVisibility(id, isPublic, e) {
+  e.stopPropagation();
+  await window.DofusApi.updateMap(id, { isPublic }).catch(() => null);
+  const maps = await loadMaps();
+  renderMaps(maps);
+}
+
+/* ── Init ── */
+(async () => {
+  currentUser = await window.DofusApi.currentUser();
+
+  const authArea = document.getElementById('auth-area');
+  if (!currentUser) {
+    authArea.innerHTML = `<a href="login.html" class="btn-sm btn-outline">Connexion</a>`;
+    document.getElementById('login-prompt').style.display = 'block';
+    document.getElementById('btn-new-map').style.display = 'none';
+    return;
+  }
+
+  authArea.innerHTML = `
+    <div class="user-chip"><div class="avatar">⚔</div><span>${currentUser.username}</span></div>
+    <button class="btn-sm btn-outline" onclick="logout()">Déconnexion</button>`;
+
+  const maps = await loadMaps();
+  renderMaps(maps);
+})();
+
+/* ── Création ── */
+document.getElementById('btn-new-map').addEventListener('click', () => {
+  document.getElementById('map-name-input').value = '';
+  document.getElementById('map-public-input').checked = false;
+  document.getElementById('modal-create').classList.add('open');
+  setTimeout(() => document.getElementById('map-name-input').focus(), 80);
+});
+
+document.getElementById('btn-cancel-create').addEventListener('click', () =>
+  document.getElementById('modal-create').classList.remove('open'));
+
+document.getElementById('btn-confirm-create').addEventListener('click', async () => {
+  const name = document.getElementById('map-name-input').value.trim();
+  const isPublic = document.getElementById('map-public-input').checked;
+  if (!name) return;
+  const map = await window.DofusApi.createMap({ name, isPublic }).catch(() => null);
+  if (map?.id) window.location.href = `map-editor.html?id=${map.id}`;
+});
+
+document.getElementById('map-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-confirm-create').click();
+  if (e.key === 'Escape') document.getElementById('modal-create').classList.remove('open');
+});
+
+/* ── Suppression ── */
+document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+  if (!deleteTargetId) return;
+  await window.DofusApi.deleteMap(deleteTargetId).catch(() => null);
+  document.getElementById('modal-delete').classList.remove('open');
+  deleteTargetId = null;
+  const maps = await loadMaps();
+  renderMaps(maps);
+});
+
+document.getElementById('btn-cancel-delete').addEventListener('click', () => {
+  document.getElementById('modal-delete').classList.remove('open');
+  deleteTargetId = null;
+});
+
+/* Fermer modal en cliquant l'overlay */
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+async function logout() {
+  await window.DofusApi.logout();
+  window.location.href = 'login.html';
+}
+
+window.openMap = openMap;
+window.confirmDelete = confirmDelete;
+window.toggleVisibility = toggleVisibility;
+window.logout = logout;
+</script>
+</body>
+</html>

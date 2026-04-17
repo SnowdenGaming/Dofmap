@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Dofus Rétro — Connexion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+
+  :root {
+    --parchment:  #E8DBC8;
+    --parchment2: #D9C9AE;
+    --olive:      #58533A;
+    --gold:       #BFB07B;
+    --gold-light: #D4C48A;
+    --gold-dark:  #8A7A50;
+    --ink:        #2A2515;
+    --red:        #8E0000;
+    --green:      #2A5A2A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--olive);
+    background-image: url('img/map 1.29.jpg');
+    background-size: cover;
+    background-position: 67% 72%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IM Fell English', Georgia, serif;
+  }
+
+  /* Overlay sombre */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 16, 6, 0.72);
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 420px;
+    background-color: var(--parchment);
+    border: 1px solid var(--gold-dark);
+    border-radius: 4px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* Bande décorative haute */
+  .card-header {
+    background-color: var(--olive);
+    padding: 28px 32px 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+  .card-header .ornament { color: var(--gold); font-size: 18px; letter-spacing: 10px; opacity: 0.7; }
+  .card-header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 26px; font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 3px;
+    margin: 8px 0 4px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  .card-header p {
+    font-style: italic;
+    color: var(--parchment2);
+    font-size: 13px;
+    opacity: 0.75;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid var(--gold-dark);
+    background-color: var(--parchment2);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    color: var(--gold-dark);
+    transition: background 0.2s, color 0.2s;
+  }
+  .tab-btn.active {
+    background-color: var(--parchment);
+    color: var(--olive);
+    font-weight: 700;
+    border-bottom: 2px solid var(--parchment);
+    margin-bottom: -2px;
+  }
+  .tab-btn:hover:not(.active) { background-color: rgba(191,176,123,0.15); }
+
+  /* Formulaires */
+  .tab-content { display: none; padding: 28px 32px 32px; }
+  .tab-content.active { display: block; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold-dark);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 13px;
+    background-color: var(--parchment2);
+    border: 1px solid var(--gold-dark);
+    border-radius: 3px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(191,176,123,0.25);
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    background-color: var(--olive);
+    color: var(--gold-light);
+    border: 1px solid var(--gold-dark);
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { background-color: #6e6849; }
+  .btn-submit:active { transform: scale(0.99); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* Messages */
+  .msg {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 13px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-style: italic;
+  }
+  .msg.error { background-color: rgba(142,0,0,0.1); color: var(--red); border: 1px solid rgba(142,0,0,0.3); }
+  .msg.success { background-color: rgba(42,90,42,0.1); color: var(--green); border: 1px solid rgba(42,90,42,0.3); }
+
+  /* Lien retour */
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold-dark);
+    text-decoration: none;
+    opacity: 0.7;
+  }
+  .back-link:hover { opacity: 1; }
+
+  /* Séparateur */
+  .divider-form {
+    display: flex; align-items: center; gap: 10px;
+    margin: 20px 0 16px;
+  }
+  .divider-form::before, .divider-form::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
+  }
+  .divider-form span {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 2px; color: var(--gold-dark); opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="ornament">✦ ✦ ✦</div>
+    <h1>Dofus Rétro</h1>
+    <p>Monde des Douze — Fan Site</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('login')">CONNEXION</button>
+    <button class="tab-btn" onclick="switchTab('register')">CRÉER UN COMPTE</button>
+  </div>
+
+  <!-- Connexion -->
+  <div id="tab-login" class="tab-content active">
+    <div class="form-group">
+      <label>Adresse e-mail</label>
+      <input id="login-id" type="email" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-submit" id="btn-login" onclick="doLogin()">SE CONNECTER</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+
+  <!-- Inscription -->
+  <div id="tab-register" class="tab-content">
+    <div class="form-group">
+      <label>Pseudo</label>
+      <input id="reg-username" type="text" placeholder="Votre pseudo (min. 3 caractères)" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Adresse e-mail</label>
+      <input id="reg-email" type="email" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input id="reg-pw" type="password" placeholder="Min. 6 caractères" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label>Confirmer le mot de passe</label>
+      <input id="reg-pw2" type="password" placeholder="Répétez votre mot de passe" autocomplete="new-password">
+    </div>
+    <button class="btn-submit" id="btn-register" onclick="doRegister()">CRÉER MON COMPTE</button>
+    <div class="msg" id="register-msg"></div>
+  </div>
+
+  <a href="index.html" class="back-link">← Retour à l'accueil</a>
+</div>
+
+<script type="module">
+  import './js/supabase-api.js';
+
+  /* Redirige si déjà connecté */
+  window.DofusApi.currentUser().then(user => {
+    if (user) window.location.href = 'index.html';
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) =>
+      b.classList.toggle('active', (i === 0) === (tab === 'login'))
+    );
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    el.style.display = 'block';
+  }
+
+  async function doLogin() {
+    const btn        = document.getElementById('btn-login');
+    const identifier = document.getElementById('login-id').value.trim();
+    const password   = document.getElementById('login-pw').value;
+
+    if (!identifier || !password) return showMsg('login-msg', 'Remplissez tous les champs.', 'error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+      return showMsg('login-msg', 'Connectez-vous avec votre adresse e-mail.', 'error');
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Connexion…';
+
+    const data = await window.DofusApi.login(identifier, password);
+
+    if (data.ok) {
+      showMsg('login-msg', `Bienvenue, ${data.username} !`, 'success');
+      setTimeout(() => window.location.href = 'index.html', 800);
+    } else {
+      showMsg('login-msg', data.error, 'error');
+      btn.disabled = false;
+      btn.textContent = 'SE CONNECTER';
+    }
+  }
+
+  async function doRegister() {
+    const btn      = document.getElementById('btn-register');
+    const username = document.getElementById('reg-username').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-pw').value;
+    const password2 = document.getElementById('reg-pw2').value;
+
+    if (password !== password2) return showMsg('register-msg', 'Les mots de passe ne correspondent pas.', 'error');
+
+    btn.disabled = true;
+    btn.textContent = 'Création…';
+
+    const data = await window.DofusApi.register(username, email, password);
+
+    if (data.ok) {
+      if (data.needsEmailConfirmation) {
+        showMsg('register-msg', data.message || 'Compte créé. Vérifiez votre e-mail avant de vous connecter.', 'success');
+        btn.disabled = false;
+        btn.textContent = 'CRÉER MON COMPTE';
+        return;
+      }
+      showMsg('register-msg', `Compte créé ! Bienvenue, ${data.username} !`, 'success');
+      setTimeout(() => window.location.href = 'index.html', 900);
+    } else {
+      showMsg('register-msg', data.error, 'error');
+      btn.disabled = false;
+      btn.textContent = 'CRÉER MON COMPTE';
+    }
+  }
+
+  /* Soumettre avec Entrée */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const loginActive = document.getElementById('tab-login').classList.contains('active');
+    if (loginActive) doLogin(); else doRegister();
+  });
+  window.switchTab = switchTab;
+  window.doLogin = doLogin;
+  window.doRegister = doRegister;
+</script>
+</body>
+</html>

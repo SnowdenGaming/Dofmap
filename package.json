@@ -1,0 +1,15 @@
+{
+  "name": "dofusretrosite",
+  "version": "1.0.0",
+  "description": "Dofus Retro 1.29 - Fan Site",
+  "private": true,
+  "scripts": {
+    "dev": "serve public",
+    "start": "serve public",
+    "setup:supabase": "node scripts/setup-supabase.js"
+  },
+  "dependencies": {
+    "pg": "^8.20.0",
+    "serve": "^14.2.4"
+  }
+}
