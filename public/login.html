@@ -22,6 +22,7 @@
 
   body {
     min-height: 100vh;
+    min-height: 100dvh;
     background-color: var(--olive);
     background-image: url('img/map 1.29.jpg');
     background-size: cover;
@@ -30,6 +31,8 @@
     align-items: center;
     justify-content: center;
     font-family: 'IM Fell English', Georgia, serif;
+    padding: 24px 16px;
+    overflow-x: hidden;
   }
 
   /* Overlay sombre */
@@ -43,7 +46,7 @@
   .card {
     position: relative;
     z-index: 1;
-    width: 420px;
+    width: min(420px, 100%);
     background-color: var(--parchment);
     border: 1px solid var(--gold-dark);
     border-radius: 4px;
@@ -190,6 +193,22 @@
   .divider-form span {
     font-family: 'Cinzel', serif; font-size: 10px;
     letter-spacing: 2px; color: var(--gold-dark); opacity: 0.6;
+  }
+
+  @media (max-width: 520px) {
+    body {
+      align-items: flex-start;
+      padding: 14px 12px;
+    }
+    .card-header { padding: 22px 18px 18px; }
+    .card-header .ornament { letter-spacing: 7px; }
+    .card-header h1 { font-size: 22px; letter-spacing: 2px; }
+    .tabs { flex-direction: column; }
+    .tab-btn { padding: 11px 10px; font-size: 12px; letter-spacing: 1px; }
+    .tab-content { padding: 22px 18px 24px; }
+    .form-group { margin-bottom: 14px; }
+    .btn-submit { font-size: 12px; letter-spacing: 1px; }
+    .back-link { margin: 0 18px 20px; }
   }
 </style>
 </head>

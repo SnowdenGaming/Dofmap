@@ -25,6 +25,9 @@
     color: var(--ink);
     font-family: 'IM Fell English', Georgia, serif;
     min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
     overflow-x: hidden;
   }
 
@@ -64,9 +67,10 @@
 
   /* ─── BANNER ─── */
   .banner {
-    position: relative; width: 100%; height: 420px;
+    position: relative; width: 100%; min-height: 320px; height: clamp(320px, 46vh, 420px);
     overflow: hidden; background-color: var(--olive);
     margin-top: 37px;
+    flex: 0 0 auto;
   }
   .banner-bg {
     position: absolute; inset: 0;
@@ -158,7 +162,12 @@
   .lore-text::before, .lore-text::after { content: '❧'; color: var(--gold-dark); font-size: 22px; vertical-align: middle; margin: 0 8px; opacity: 0.7; }
 
   /* ─── FOOTER ─── */
-  footer { background-color: var(--olive); color: var(--gold); text-align: center; padding: 18px 20px; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; }
+  footer {
+    margin-top: auto;
+    background-color: var(--olive); color: var(--gold); text-align: center;
+    padding: 18px 20px; font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 3px; line-height: 1.7;
+  }
 
   /* ─── ANIMATIONS ─── */
   .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease forwards; }
@@ -167,6 +176,38 @@
   .fade-in:nth-child(3) { animation-delay: 0.34s; }
   .fade-in:nth-child(4) { animation-delay: 0.46s; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 720px) {
+    #topbar {
+      justify-content: center;
+      padding: 8px 12px;
+      min-height: 44px;
+    }
+    #topbar .user-info { max-width: 60vw; }
+    #topbar .user-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .banner {
+      margin-top: 44px;
+      min-height: 280px;
+      height: 38vh;
+    }
+    .banner-content { padding: 18px 14px; }
+    .banner-ornament { font-size: 18px; letter-spacing: 8px; }
+    .banner-title { font-size: clamp(32px, 12vw, 48px); letter-spacing: 2px; }
+    .banner-subtitle { font-size: 15px; letter-spacing: 1px; }
+    .banner-version { font-size: 11px; letter-spacing: 4px; }
+    .divider { padding: 0 18px; margin-top: 26px; }
+    .section-title { padding: 0 18px; letter-spacing: 3px; }
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 26px auto 38px;
+      padding: 0 16px;
+    }
+    .card { padding: 24px 18px 20px; }
+    .lore { margin-bottom: 34px; padding: 0 18px; }
+    .lore-text { padding: 0; }
+    footer { padding: 16px; font-size: 10px; letter-spacing: 2px; }
+  }
 </style>
 </head>
 <body>

@@ -259,6 +259,73 @@
     font-weight: bold; color: #58533A;
   }
   #go-btn:hover { background: #d4c48a; }
+
+  @media (max-width: 900px) {
+    #topbar {
+      height: auto;
+      min-height: 82px;
+      flex-wrap: wrap;
+      align-content: center;
+      padding: 6px 8px;
+      gap: 6px;
+    }
+    .topbar-left, .topbar-center, .topbar-right {
+      flex: 1 1 auto;
+      min-width: min(100%, 260px);
+    }
+    .topbar-center {
+      order: 3;
+      width: 100%;
+      justify-content: flex-start;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    #map-title-input { width: min(180px, 42vw); }
+    #save-status { white-space: nowrap; }
+    #toolbar { top: 82px; width: 56px; }
+    #viewport { top: 82px !important; left: 56px !important; }
+    #search-box { left: 66px; bottom: 12px; }
+    .tool-btn { width: 40px; height: 40px; }
+    .icon-grid { width: 52px; }
+    .icon-btn { width: 23px; height: 23px; }
+  }
+
+  @media (max-width: 560px) {
+    #topbar {
+      min-height: 118px;
+      align-items: flex-start;
+    }
+    .topbar-left, .topbar-right { width: 100%; }
+    .topbar-right { justify-content: space-between; }
+    .back-link {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    #map-title-input {
+      flex: 1;
+      width: auto;
+      min-width: 0;
+      font-size: 13px;
+    }
+    #coords-bar { display: none; }
+    #toolbar {
+      top: 118px;
+      width: 52px;
+    }
+    #viewport {
+      top: 118px !important;
+      left: 52px !important;
+    }
+    #search-box {
+      left: 60px;
+      right: 8px;
+      bottom: 8px;
+      width: auto;
+      flex-wrap: wrap;
+    }
+    #search-box input { width: 44px; }
+    #note-popup { width: min(200px, calc(100vw - 24px)); }
+  }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 </head>

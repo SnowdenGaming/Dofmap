@@ -107,6 +107,40 @@
   #home-btn  { right: 0; }
   #back-btn  { right: 76px; border-bottom-right-radius: 6px; border-bottom-left-radius: 0; color: #BFB07B; }
   #user-btn  { right: 170px; background-color: #3A3520; border-bottom-right-radius: 6px; border-bottom-left-radius: 0; pointer-events: none; }
+
+  @media (max-width: 760px) {
+    #hud {
+      top: 42px;
+      width: min(92vw, 360px);
+      text-align: center;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 0 0 6px 6px;
+    }
+    #search-box {
+      right: 0;
+      border-bottom-right-radius: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #search-box input { width: 44px; }
+    .btn-top-right {
+      top: auto;
+      bottom: 0;
+      border-radius: 6px 6px 0 0;
+      padding: 7px 10px;
+    }
+    #home-btn { right: 0; }
+    #back-btn { right: 78px; }
+    #user-btn { display: none !important; }
+    #coords-bar {
+      bottom: 42px;
+      max-width: 92vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 </style>
 </head>
 <body>
