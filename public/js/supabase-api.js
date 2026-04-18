@@ -17,11 +17,13 @@ function usernameFromUser(user) {
 
 function userFromSupabase(user) {
   if (!user) return null;
-  return {
+  const apiUser = {
     id: user.id,
     email: user.email,
     username: usernameFromUser(user)
   };
+  window.DofusShell?.setCachedUser?.(apiUser);
+  return apiUser;
 }
 
 function toApiMap(row, userId = null) {
@@ -61,6 +63,7 @@ function authErrorMessage(error) {
 
 async function currentUser() {
   const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) window.DofusShell?.setCachedUser?.(null);
   if (error) return null;
   return userFromSupabase(data.user);
 }
@@ -108,6 +111,7 @@ async function login(identifier, password) {
 
 async function logout() {
   await supabase.auth.signOut();
+  window.DofusShell?.setCachedUser?.(null);
 }
 
 async function listMaps() {

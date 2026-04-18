@@ -89,6 +89,7 @@
 </div>
 
 <script src="js/theme-toggle.js" defer></script>
+<script src="js/app-shell.js" defer></script>
 <script type="module">
 import './js/supabase-api.js';
 
@@ -185,17 +186,14 @@ async function toggleVisibility(id, isPublic, event) {
 (async () => {
   currentUser = await window.DofusApi.currentUser();
 
-  const authArea = document.getElementById('auth-area');
   if (!currentUser) {
-    authArea.innerHTML = `<a href="login.html" class="btn-topbar btn-login">Connexion</a>`;
+    window.DofusShell.setGuest();
     document.getElementById('login-prompt').style.display = 'grid';
     document.getElementById('btn-new-map').style.display = 'none';
     return;
   }
 
-  authArea.innerHTML = `
-    <div class="user-chip"><span class="user-chip-label">Compte</span><strong>${currentUser.username}</strong></div>
-    <button class="btn-topbar btn-logout" onclick="logout()" type="button">Déconnexion</button>`;
+  window.DofusShell.setUser(currentUser);
 
   document.getElementById('maps-tools').style.display = 'flex';
   allMaps = await loadMaps();
@@ -247,15 +245,9 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
-async function logout() {
-  await window.DofusApi.logout();
-  window.location.href = 'login.html';
-}
-
 window.openMap = openMap;
 window.confirmDelete = confirmDelete;
 window.toggleVisibility = toggleVisibility;
-window.logout = logout;
 </script>
 </body>
 </html>

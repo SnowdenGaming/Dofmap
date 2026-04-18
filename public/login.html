@@ -69,6 +69,7 @@
 </main>
 
 <script src="js/theme-toggle.js" defer></script>
+<script src="js/app-shell.js" defer></script>
 <script type="module">
 import './js/supabase-api.js';
 
@@ -107,6 +108,8 @@ async function doLogin() {
   const data = await window.DofusApi.login(identifier, password);
 
   if (data.ok) {
+    const user = await window.DofusApi.currentUser();
+    if (user) window.DofusShell.setUser(user);
     showMsg('login-msg', `Bienvenue, ${data.username} !`, 'success');
     setTimeout(() => window.location.href = 'index.html', 800);
   } else {
@@ -136,8 +139,10 @@ async function doRegister() {
       btn.disabled = false;
       btn.textContent = 'Créer mon compte';
       return;
-    }
-    showMsg('register-msg', `Compte créé ! Bienvenue, ${data.username} !`, 'success');
+      }
+      const user = await window.DofusApi.currentUser();
+      if (user) window.DofusShell.setUser(user);
+      showMsg('register-msg', `Compte créé ! Bienvenue, ${data.username} !`, 'success');
     setTimeout(() => window.location.href = 'index.html', 900);
   } else {
     showMsg('register-msg', data.error, 'error');
