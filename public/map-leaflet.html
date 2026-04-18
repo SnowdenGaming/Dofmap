@@ -131,7 +131,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .leaflet-tooltip.cell-tooltip {
+  .cursor-tooltip {
+    position: fixed;
+    z-index: 1400;
+    left: 0;
+    top: 0;
     padding: 5px 8px;
     border: 1px solid rgba(245, 229, 184, 0.35);
     border-radius: 4px;
@@ -139,6 +143,12 @@
     color: #F5E5B8;
     box-shadow: none;
     font: 12px Consolas, monospace;
+    pointer-events: none;
+    transform: translate3d(-9999px, -9999px, 0);
+    will-change: transform;
+  }
+  .cursor-tooltip.is-hidden {
+    opacity: 0;
   }
   @media (max-width: 720px) {
     .topbar {
@@ -173,6 +183,7 @@
 </div>
 
 <div class="coords" id="coords">Survolez une case</div>
+<div class="cursor-tooltip is-hidden" id="cursor-tooltip"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -201,8 +212,12 @@
   const bounds = L.latLngBounds([[-MAP_HEIGHT, 0], [0, MAP_WIDTH]]);
 
   const coords = document.getElementById('coords');
+  const cursorTooltip = document.getElementById('cursor-tooltip');
   let selectedKey = null;
   let hoveredKey = null;
+  let hoverRect = null;
+  let tooltipFrame = 0;
+  let pendingTooltip = null;
 
   function cellWidth(ci) {
     return ci < 41 ? 37 : 38;
@@ -227,6 +242,14 @@
 
   function cellCenter(x, y) {
     return cellCenterByIndex(x - X_MIN, y - Y_MIN);
+  }
+
+  function cellPixelRect(cell) {
+    const left = colLeft[cell.ci];
+    const top = cell.ri * ROW_PITCH;
+    const right = Math.min(cell.ci === COLS - 1 ? GRID_WIDTH : colLeft[cell.ci + 1], MAP_WIDTH);
+    const bottom = Math.min(top + ROW_PITCH, MAP_HEIGHT);
+    return { left, top, width: right - left, height: bottom - top };
   }
 
   function pointToCell(latlng) {
@@ -263,10 +286,6 @@
   });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  map.createPane('hoverPane');
-  map.getPane('hoverPane').style.zIndex = 620;
-  map.getPane('hoverPane').style.pointerEvents = 'none';
-
   map.createPane('selectionPane');
   map.getPane('selectionPane').style.zIndex = 610;
   map.getPane('selectionPane').style.pointerEvents = 'none';
@@ -277,13 +296,6 @@
   }).addTo(map);
 
   const selectionLayer = L.layerGroup().addTo(map);
-  const hoverLayer = L.layerGroup().addTo(map);
-  const hoverTooltip = L.tooltip({
-    permanent: false,
-    direction: 'right',
-    className: 'cell-tooltip',
-    offset: [12, 0]
-  });
 
   function addGridLine(lines, x1, y1, x2, y2) {
     lines.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
@@ -309,7 +321,8 @@
       if (top >= MAP_HEIGHT) break;
     }
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" preserveAspectRatio="none"><g stroke="#D8CBAA" stroke-width="1.5" stroke-opacity="0.42" vector-effect="non-scaling-stroke">${lines.join('')}</g></svg>`;
+    const hover = '<rect id="hover-cell" display="none" fill="#FFE48A" fill-opacity="0.56" stroke="#FFF0BF" stroke-width="2" stroke-opacity="0.95" vector-effect="non-scaling-stroke"/>';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" preserveAspectRatio="none">${hover}<g stroke="#D8CBAA" stroke-width="1.5" stroke-opacity="0.42" vector-effect="non-scaling-stroke">${lines.join('')}</g></svg>`;
     return svg;
   }
 
@@ -390,29 +403,46 @@
     clampPanToImage();
   }
 
+  function clearCursorTooltip() {
+    cursorTooltip.classList.add('is-hidden');
+    cursorTooltip.textContent = '';
+    pendingTooltip = null;
+  }
+
+  function moveCursorTooltip(event, text) {
+    pendingTooltip = { x: event.clientX + 14, y: event.clientY + 14, text };
+    if (tooltipFrame) return;
+    tooltipFrame = requestAnimationFrame(() => {
+      tooltipFrame = 0;
+      if (!pendingTooltip) return;
+      cursorTooltip.textContent = pendingTooltip.text;
+      cursorTooltip.style.transform = `translate3d(${pendingTooltip.x}px, ${pendingTooltip.y}px, 0)`;
+      cursorTooltip.classList.remove('is-hidden');
+      pendingTooltip = null;
+    });
+  }
+
   function clearHoverCell() {
     hoveredKey = null;
-    hoverLayer.clearLayers();
+    if (hoverRect) hoverRect.setAttribute('display', 'none');
   }
 
   function hoverCell(cell) {
     const key = `${cell.x},${cell.y}`;
     if (hoveredKey === key) return;
     hoveredKey = key;
-    hoverLayer.clearLayers();
-    L.rectangle(cellBounds(cell.x, cell.y), {
-      pane: 'hoverPane',
-      interactive: false,
-      color: '#FFF0BF',
-      weight: 2,
-      opacity: 0.95,
-      fillColor: '#FFE48A',
-      fillOpacity: 0.48
-    }).addTo(hoverLayer);
+    if (!hoverRect) return;
+    const rect = cellPixelRect(cell);
+    hoverRect.setAttribute('x', rect.left);
+    hoverRect.setAttribute('y', rect.top);
+    hoverRect.setAttribute('width', rect.width);
+    hoverRect.setAttribute('height', rect.height);
+    hoverRect.removeAttribute('display');
   }
 
   map.setView(cellCenter(0, 0), 0, { animate: false });
   gridElement.innerHTML = buildGridSvg();
+  hoverRect = gridElement.querySelector('#hover-cell');
   applyZoomLimits();
   syncGridOverlay();
   clampPanToImage();
@@ -426,26 +456,28 @@
   });
   map.on('move zoom viewreset', syncGridOverlay);
 
-  map.on('mousemove', e => {
-    const cell = pointToCell(e.latlng);
+  function handlePointerMove(event) {
+    const cell = pointToCell(map.mouseEventToLatLng(event));
     if (!cell) {
       coords.textContent = selectedKey ? `Selection [${selectedKey}]` : 'Survolez une case';
       clearHoverCell();
-      map.closeTooltip(hoverTooltip);
+      clearCursorTooltip();
       return;
     }
     hoverCell(cell);
     const text = `[${cell.x}, ${cell.y}]`;
     coords.textContent = text;
-    hoverTooltip.setContent(text).setLatLng(e.latlng);
-    if (!map.hasLayer(hoverTooltip)) hoverTooltip.addTo(map);
-  });
+    moveCursorTooltip(event, text);
+  }
 
-  map.on('mouseout', () => {
+  function handlePointerLeave() {
     clearHoverCell();
-    map.closeTooltip(hoverTooltip);
+    clearCursorTooltip();
     coords.textContent = selectedKey ? `Selection [${selectedKey}]` : 'Survolez une case';
-  });
+  }
+
+  map.getContainer().addEventListener('pointermove', handlePointerMove, { passive: true });
+  map.getContainer().addEventListener('pointerleave', handlePointerLeave);
 
   map.on('click', e => {
     const cell = pointToCell(e.latlng);
