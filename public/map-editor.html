@@ -2,111 +2,102 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dofus Rétro — Éditeur de carte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dofus Retro - Editeur de carte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    background-color: #111;
-    font-family: "Gill Sans", sans-serif;
-    -webkit-user-select: none; user-select: none;
+    background: #111;
+    color: #D4C48A;
+    font-family: "Gill Sans", Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  /* ── MAP ── */
-  #viewport { position: fixed; inset: 0; overflow: hidden; cursor: grab; }
-  #viewport.grabbing { cursor: grabbing; }
-  #viewport.tool-active { cursor: crosshair; }
-  #viewport.tool-active.grabbing { cursor: grabbing; }
-
-  #map-container {
-    position: absolute; top: 0; left: 0;
-    background-image: url('img/map 1.29.jpg');
-    background-color: #E8DBC8;
-    background-repeat: no-repeat; background-size: auto;
-    width: 5359px; will-change: transform;
-  }
-
-  table { border-spacing: 0; border-collapse: collapse; }
-  table, tr, td { top: 0; left: 0; margin: 0; padding: 0; }
-  td {
-    border-right: 2px solid #B8B18F;
-    border-bottom: 2px solid #B8B18F;
-    height: 21px !important;
-    cursor: crosshair;
-    box-sizing: content-box;
-    position: relative;
-  }
-  td:nth-child(-n+41) { width: 37px; }
-  td:nth-child(n+42)  { width: 38px; }
-  td:hover { outline: 1px solid rgba(255,255,255,0.5); outline-offset: -1px; }
-  td.selected {
-    outline: 2px solid #ffffff;
-    outline-offset: -2px;
-    box-shadow: inset 0 0 0 2px #1f8cff, inset 0 0 12px rgba(31,140,255,0.7);
-  }
-
-  /* Icône dans la cellule */
-  td .cell-icon {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; pointer-events: none; line-height: 1;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(255,255,255,0.7);
-  }
-
-  /* ── TOPBAR ── */
   #topbar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    height: 40px;
-    display: flex; align-items: center; justify-content: space-between;
-    background-color: rgba(42,37,21,0.95);
-    border-bottom: 1px solid rgba(191,176,123,0.25);
-    padding: 0 12px; gap: 10px;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 12px;
+    background: rgba(42, 37, 21, 0.95);
+    border-bottom: 1px solid rgba(191, 176, 123, 0.25);
   }
-  .topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+
+  .topbar-left,
+  .topbar-center,
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar-left { flex: 1 1 auto; }
+  .topbar-center { flex: 0 1 auto; }
+  .topbar-right { flex: 0 0 auto; }
+
   .back-link {
-    color: #BFB07B; text-decoration: none; font-size: 12px;
-    font-family: 'Cinzel', serif; letter-spacing: 1px;
-    padding: 4px 10px; border: 1px solid rgba(191,176,123,0.3);
-    border-radius: 3px; white-space: nowrap;
+    color: #BFB07B;
+    text-decoration: none;
+    font: 12px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border: 1px solid rgba(191, 176, 123, 0.3);
+    border-radius: 4px;
+    white-space: nowrap;
   }
-  .back-link:hover { background: rgba(191,176,123,0.1); }
+  .back-link:hover { background: rgba(191, 176, 123, 0.1); }
 
   #map-title-input {
-    background: transparent; border: none; border-bottom: 1px solid rgba(191,176,123,0.4);
-    color: #D4C48A; font-family: 'Cinzel', serif; font-size: 14px;
-    letter-spacing: 1px; outline: none; width: 200px; padding: 2px 4px;
+    min-width: 120px;
+    width: 220px;
+    max-width: 34vw;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(191, 176, 123, 0.4);
+    color: #D4C48A;
+    font: 14px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    outline: none;
+    padding: 2px 4px;
   }
   #map-title-input:focus { border-bottom-color: #BFB07B; }
 
-  .topbar-center { display: flex; align-items: center; gap: 8px; }
-  #save-status { font-size: 11px; color: #BFB07B; opacity: 0.6; font-style: italic; }
-  #selection-status {
-    font-size: 11px; color: #D4C48A; opacity: 0.8;
-    font-family: 'Cinzel', serif; letter-spacing: 1px; white-space: nowrap;
-  }
-
-  .btn-save {
-    padding: 5px 16px; background: #58533A; color: #D4C48A;
-    border: 1px solid #8A7A50; border-radius: 3px;
-    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
-    letter-spacing: 1px; cursor: pointer; transition: background 0.2s;
-  }
-  .btn-save:hover { background: #6e6849; }
-  .btn-save:disabled { opacity: 0.5; cursor: default; }
-
   .visibility-control {
-    display: flex; align-items: center; gap: 6px;
-    color: #BFB07B; font-family: 'Cinzel', serif; font-size: 11px;
-    letter-spacing: 1px; white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #BFB07B;
+    font: 11px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
   .visibility-control input { accent-color: #2a7a2a; }
+
   .readonly-badge {
-    display: none; padding: 4px 8px; border-radius: 3px;
-    border: 1px solid rgba(191,176,123,0.35);
-    color: #D4C48A; font-family: 'Cinzel', serif; font-size: 10px;
-    letter-spacing: 1px; white-space: nowrap;
+    display: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(191, 176, 123, 0.35);
+    color: #D4C48A;
+    font: 10px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
   body.readonly #readonly-badge { display: inline-block; }
   body.readonly #map-title-input { pointer-events: none; opacity: 0.75; }
@@ -114,162 +105,300 @@
   body.readonly #toolbar .color-swatch,
   body.readonly #toolbar .icon-btn,
   body.readonly #custom-color {
-    opacity: 0.45; pointer-events: none;
+    opacity: 0.45;
+    pointer-events: none;
   }
   body.readonly #tool-pan { opacity: 1; pointer-events: auto; }
 
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
-  #coords-bar {
-    font-size: 12px; color: #BFB07B; opacity: 0.7;
-    font-family: monospace; white-space: nowrap;
+  #selection-status {
+    color: #D4C48A;
+    opacity: 0.8;
+    font: 11px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
-  .zoom-control {
-    display: flex; align-items: center; gap: 3px;
-    padding: 2px; border: 1px solid rgba(191,176,123,0.28);
-    border-radius: 4px; background: rgba(20,16,6,0.18);
+  #save-status {
+    color: #BFB07B;
+    opacity: 0.75;
+    font-size: 11px;
+    font-style: italic;
+    white-space: nowrap;
   }
+
+  .btn-save,
   .zoom-btn {
-    min-width: 28px; height: 24px; padding: 0 7px;
-    background: transparent; color: #D4C48A;
-    border: 1px solid transparent; border-radius: 3px;
-    font-family: 'Cinzel', serif; font-size: 11px;
+    min-height: 26px;
+    border-radius: 4px;
+    font-family: Cinzel, Georgia, serif;
+    letter-spacing: 1px;
     cursor: pointer;
   }
-  .zoom-btn:hover { background: rgba(191,176,123,0.12); border-color: rgba(191,176,123,0.3); }
+  .btn-save {
+    padding: 5px 14px;
+    background: #58533A;
+    color: #D4C48A;
+    border: 1px solid #8A7A50;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .btn-save:hover { background: #6e6849; }
+  .btn-save:disabled { opacity: 0.5; cursor: default; }
+
+  .zoom-control {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px;
+    border: 1px solid rgba(191, 176, 123, 0.28);
+    border-radius: 4px;
+    background: rgba(20, 16, 6, 0.18);
+  }
+  .zoom-btn {
+    min-width: 28px;
+    height: 24px;
+    padding: 0 7px;
+    background: transparent;
+    color: #D4C48A;
+    border: 1px solid transparent;
+    font-size: 11px;
+  }
+  .zoom-btn:hover {
+    background: rgba(191, 176, 123, 0.12);
+    border-color: rgba(191, 176, 123, 0.3);
+  }
   #zoom-label {
-    min-width: 44px; text-align: center;
-    color: #BFB07B; font: 12px monospace;
+    min-width: 44px;
+    text-align: center;
+    color: #BFB07B;
+    font: 12px Consolas, monospace;
+  }
+  #coords-bar {
+    color: #BFB07B;
+    opacity: 0.8;
+    font: 12px Consolas, monospace;
+    white-space: nowrap;
   }
 
-  /* ── TOOLBAR GAUCHE ── */
   #toolbar {
-    position: fixed; left: 0; top: 40px; bottom: 0; z-index: 150;
+    position: fixed;
+    z-index: 900;
+    left: 0;
+    top: 40px;
+    bottom: 0;
     width: 64px;
-    background-color: rgba(42,37,21,0.95);
-    border-right: 1px solid rgba(191,176,123,0.2);
-    display: flex; flex-direction: column; align-items: center;
-    padding: 10px 0; gap: 4px; overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 0;
+    overflow-y: auto;
+    background: rgba(42, 37, 21, 0.95);
+    border-right: 1px solid rgba(191, 176, 123, 0.2);
   }
-
   .tool-sep {
-    width: 40px; height: 1px;
-    background: rgba(191,176,123,0.2);
+    width: 40px;
+    height: 1px;
     margin: 4px 0;
+    background: rgba(191, 176, 123, 0.2);
   }
   .tool-label {
-    font-family: 'Cinzel', serif; font-size: 8px;
-    color: #8A7A50; letter-spacing: 1px;
-    text-transform: uppercase; margin-top: 2px;
+    margin-top: 2px;
+    color: #8A7A50;
+    font: 8px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
-
   .tool-btn {
-    width: 44px; height: 44px; border-radius: 6px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; border: 1px solid transparent;
+    width: 44px;
+    height: 44px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: transparent;
+    cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
-    gap: 2px; background: transparent;
   }
-  .tool-btn:hover { background: rgba(191,176,123,0.12); }
-  .tool-btn.active { background: rgba(191,176,123,0.2); border-color: #8A7A50; }
+  .tool-btn:hover { background: rgba(191, 176, 123, 0.12); }
+  .tool-btn.active { background: rgba(191, 176, 123, 0.2); border-color: #8A7A50; }
   .tool-btn .icon-lbl { font-size: 18px; line-height: 1; }
-  .tool-btn .tool-name { font-size: 7px; color: #8A7A50; font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tool-btn .tool-name {
+    color: #8A7A50;
+    font: 7px Cinzel, Georgia, serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
   .tool-btn.active .tool-name { color: #BFB07B; }
 
-  /* ── COLOR PALETTE ── */
   .color-grid {
-    display: grid; grid-template-columns: repeat(2, 18px); gap: 3px;
+    display: grid;
+    grid-template-columns: repeat(2, 18px);
+    gap: 3px;
     padding: 4px;
   }
   .color-swatch {
-    width: 18px; height: 18px; border-radius: 3px;
-    cursor: pointer; border: 1px solid rgba(0,0,0,0.3);
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
   }
-  .color-swatch:hover { transform: scale(1.2); }
-  .color-swatch.active { box-shadow: 0 0 0 2px #BFB07B; transform: scale(1.15); }
-
-  /* Couleur personnalisée */
-  #custom-color-wrap { position: relative; }
+  .color-swatch:hover { transform: scale(1.16); }
+  .color-swatch.active { box-shadow: 0 0 0 2px #BFB07B; transform: scale(1.12); }
   #custom-color {
-    width: 38px; height: 22px; border-radius: 3px; border: 1px solid #8A7A50;
-    cursor: pointer; padding: 0; background: none;
+    width: 38px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid #8A7A50;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
   }
-
-  /* ── ICON GRID ── */
   .icon-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
-    padding: 4px; width: 58px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    width: 58px;
+    padding: 4px;
   }
   .icon-btn {
-    width: 26px; height: 26px; border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; cursor: pointer;
-    border: 1px solid transparent; background: transparent;
+    width: 26px;
+    height: 26px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
     transition: background 0.1s;
   }
-  .icon-btn:hover { background: rgba(191,176,123,0.15); }
-  .icon-btn.active { background: rgba(191,176,123,0.25); border-color: #8A7A50; }
+  .icon-btn:hover { background: rgba(191, 176, 123, 0.15); }
+  .icon-btn.active { background: rgba(191, 176, 123, 0.25); border-color: #8A7A50; }
 
-  /* ── TOOLTIP ── */
-  #tooltip {
-    position: fixed; z-index: 300; display: none;
-    background: rgba(0,0,0,0.78); color: #fff;
-    border-radius: 5px; padding: 4px 9px; font-size: 12px;
-    pointer-events: none; white-space: nowrap;
+  #viewport {
+    position: fixed;
+    top: 40px;
+    left: 64px;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    background: #111;
+  }
+  #leaflet-map {
+    width: 100%;
+    height: 100%;
+    background: #111;
+  }
+  .leaflet-container {
+    font: inherit;
+    cursor: grab;
+  }
+  .leaflet-container.leaflet-dragging { cursor: grabbing; }
+  #viewport.tool-active .leaflet-container { cursor: crosshair; }
+  .leaflet-control-attribution { display: none; }
+  .leaflet-control-zoom { display: none; }
+  .leaflet-image-layer { image-rendering: auto; }
+
+  .map-cell-overlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .map-cell-overlay svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .map-grid-line,
+  .map-cell-rect,
+  .map-selection-rect,
+  .map-hover-rect {
+    vector-effect: non-scaling-stroke;
+  }
+  .map-cell-icon {
+    pointer-events: none;
+    dominant-baseline: middle;
+    text-anchor: middle;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 18px;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.55);
+    stroke-width: 2px;
+    stroke-linejoin: round;
   }
 
-  /* ── NOTE POPUP ── */
+  #tooltip {
+    position: fixed;
+    z-index: 1400;
+    left: 0;
+    top: 0;
+    padding: 5px 8px;
+    border: 1px solid rgba(245, 229, 184, 0.35);
+    border-radius: 4px;
+    background: rgba(28, 23, 13, 0.86);
+    color: #F5E5B8;
+    box-shadow: none;
+    font: 12px Consolas, monospace;
+    pointer-events: none;
+    transform: translate3d(-9999px, -9999px, 0);
+    will-change: transform;
+  }
+  #tooltip.is-hidden { opacity: 0; }
+
   #note-popup {
-    display: none; position: fixed; z-index: 400;
-    background: #2A2515; border: 1px solid #8A7A50;
-    border-radius: 5px; padding: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: none;
+    position: fixed;
+    z-index: 1500;
     width: 200px;
+    padding: 10px;
+    border: 1px solid #8A7A50;
+    border-radius: 5px;
+    background: #2A2515;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
   #note-input {
-    width: 100%; background: #3A3520; border: 1px solid #8A7A50;
-    border-radius: 3px; padding: 6px 8px; color: #D4C48A;
-    font-family: serif; font-size: 13px; resize: none; outline: none;
+    width: 100%;
     height: 60px;
+    resize: none;
+    outline: none;
+    padding: 6px 8px;
+    border: 1px solid #8A7A50;
+    border-radius: 4px;
+    background: #3A3520;
+    color: #D4C48A;
+    font: 13px Georgia, serif;
   }
   .note-popup-btns { display: flex; gap: 6px; margin-top: 6px; }
   .btn-note {
-    flex: 1; padding: 4px; background: #58533A; color: #BFB07B;
-    border: 1px solid #8A7A50; border-radius: 3px; cursor: pointer;
-    font-size: 11px; font-family: 'Cinzel', serif; letter-spacing: 1px;
+    flex: 1;
+    padding: 4px;
+    border: 1px solid #8A7A50;
+    border-radius: 4px;
+    background: #58533A;
+    color: #BFB07B;
+    cursor: pointer;
+    font: 11px Cinzel, Georgia, serif;
+    letter-spacing: 1px;
   }
   .btn-note.cancel { background: transparent; color: #8A7A50; }
 
-  /* ── SEARCH ── */
-  #search-box {
-    position: fixed; bottom: 16px; left: 80px; z-index: 200;
-    background: rgba(88,83,58,0.92);
-    border-radius: 6px; padding: 5px 8px;
-    display: flex; gap: 5px; align-items: center;
-  }
-  #search-box label { color: #BFB07B; font-size: 12px; font-weight: bold; }
-  #search-box input {
-    background: #BFB07B; border: none; border-radius: 3px;
-    padding: 2px 5px; width: 48px; font-size: 12px;
-    text-align: center; color: #333;
-  }
-  #go-btn {
-    background: #BFB07B; border: none; border-radius: 3px;
-    padding: 2px 8px; cursor: pointer; font-size: 12px;
-    font-weight: bold; color: #58533A;
-  }
-  #go-btn:hover { background: #d4c48a; }
-
   @media (max-width: 900px) {
     #topbar {
-      height: auto;
       min-height: 82px;
       flex-wrap: wrap;
       align-content: center;
       padding: 6px 8px;
       gap: 6px;
     }
-    .topbar-left, .topbar-center, .topbar-right {
+    .topbar-left,
+    .topbar-center,
+    .topbar-right {
       flex: 1 1 auto;
       min-width: min(100%, 260px);
     }
@@ -280,62 +409,39 @@
       overflow-x: auto;
       padding-bottom: 2px;
     }
+    .topbar-right { justify-content: space-between; }
     #map-title-input { width: min(180px, 42vw); }
-    #save-status { white-space: nowrap; }
     #toolbar { top: 82px; width: 56px; }
-    #viewport { top: 82px !important; left: 56px !important; }
-    #search-box { left: 66px; bottom: 12px; }
+    #viewport { top: 82px; left: 56px; }
     .tool-btn { width: 40px; height: 40px; }
     .icon-grid { width: 52px; }
     .icon-btn { width: 23px; height: 23px; }
   }
 
   @media (max-width: 560px) {
-    #topbar {
-      min-height: 118px;
-      align-items: flex-start;
-    }
-    .topbar-left, .topbar-right { width: 100%; }
-    .topbar-right { justify-content: space-between; }
-    .back-link {
-      padding: 4px 8px;
-      font-size: 11px;
-    }
+    #topbar { min-height: 118px; align-items: flex-start; }
+    .topbar-left,
+    .topbar-right { width: 100%; }
+    .back-link { padding: 4px 8px; font-size: 11px; }
     #map-title-input {
       flex: 1;
       width: auto;
       min-width: 0;
+      max-width: none;
       font-size: 13px;
     }
     #coords-bar { display: none; }
-    #toolbar {
-      top: 118px;
-      width: 52px;
-    }
-    #viewport {
-      top: 118px !important;
-      left: 52px !important;
-    }
-    #search-box {
-      left: 60px;
-      right: 8px;
-      bottom: 8px;
-      width: auto;
-      flex-wrap: wrap;
-    }
-    #search-box input { width: 44px; }
+    #toolbar { top: 118px; width: 52px; }
+    #viewport { top: 118px; left: 52px; }
     #note-popup { width: min(200px, calc(100vw - 24px)); }
   }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- TOPBAR -->
 <div id="topbar">
   <div class="topbar-left">
     <a href="maps.html" class="back-link">← Mes cartes</a>
-    <input id="map-title-input" type="text" value="Chargement…" maxlength="60" title="Cliquer pour renommer">
+    <input id="map-title-input" type="text" value="Chargement..." maxlength="60" title="Cliquer pour renommer">
   </div>
   <div class="topbar-center">
     <label class="visibility-control" id="visibility-control">
@@ -345,7 +451,7 @@
     <span class="readonly-badge" id="readonly-badge">Lecture seule</span>
     <span id="selection-status">0 case</span>
     <span id="save-status">Non sauvegardé</span>
-    <button class="btn-save" id="btn-save">💾 Sauvegarder</button>
+    <button class="btn-save" id="btn-save">Sauvegarder</button>
   </div>
   <div class="topbar-right">
     <div class="zoom-control" title="Molette pour zoomer">
@@ -354,14 +460,12 @@
       <button class="zoom-btn" id="zoom-in" type="button">+</button>
       <button class="zoom-btn" id="zoom-reset" type="button">100</button>
     </div>
-    <span id="coords-bar">[–, –]</span>
+    <span id="coords-bar">[-, -]</span>
   </div>
 </div>
 
-<!-- TOOLBAR -->
 <div id="toolbar">
   <span class="tool-label">Outil</span>
-
   <button class="tool-btn active" id="tool-pan" onclick="setTool('pan')" title="Déplacer la carte">
     <span class="icon-lbl">✋</span>
     <span class="tool-name">Pan</span>
@@ -389,64 +493,81 @@
   <div class="icon-grid" id="icon-grid"></div>
 </div>
 
-<!-- MAP -->
-<div id="viewport" style="left:64px; top:40px;">
-  <div id="map-container">
-    <table id="map-table"><tbody id="map-body"></tbody></table>
-  </div>
+<div id="viewport">
+  <div id="leaflet-map"></div>
 </div>
 
-<!-- SEARCH -->
-<div id="search-box">
-  <label>X</label><input id="sx" type="number" value="0" min="-91" max="43">
-  <label>Y</label><input id="sy" type="number" value="0" min="-120" max="48">
-  <button id="go-btn">→</button>
-</div>
-
-<!-- TOOLTIP / NOTE POPUP -->
-<div id="tooltip"></div>
+<div id="tooltip" class="is-hidden"></div>
 <div id="note-popup">
-  <textarea id="note-input" placeholder="Votre note…"></textarea>
+  <textarea id="note-input" placeholder="Votre note..."></textarea>
   <div class="note-popup-btns">
     <button class="btn-note" id="btn-note-ok">OK</button>
     <button class="btn-note cancel" id="btn-note-cancel">Annuler</button>
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import './js/supabase-api.js';
 
 (function () {
-
-/* ── Paramètres grille ── */
-const X_MIN = -91, X_MAX = 43, Y_MIN = -120, Y_MAX = 48;
-const COLS  = X_MAX - X_MIN + 1, ROWS = Y_MAX - Y_MIN + 1;
+const X_MIN = -91, X_MAX = 43;
+const Y_MIN = -120, Y_MAX = 48;
+const COLS = X_MAX - X_MIN + 1;
+const ROWS = Y_MAX - Y_MIN + 1;
 const PITCH_N = 39, PITCH_W = 40, ROW_PITCH = 23;
+const IMAGE_WIDTH = 5359;
+const IMAGE_HEIGHT = 3869;
+const MAP_WIDTH = IMAGE_WIDTH;
+const MAP_HEIGHT = IMAGE_HEIGHT;
+const ZOOM_STEP = 0.25;
+const ABSOLUTE_MIN_ZOOM = -2;
+const MAX_ZOOM = 3;
+const bounds = L.latLngBounds([[-MAP_HEIGHT, 0], [0, MAP_WIDTH]]);
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const colLeft = [0];
-for (let c = 1; c < COLS; c++)
-  colLeft[c] = colLeft[c-1] + (c-1 < 41 ? PITCH_N : PITCH_W);
-
-function cellCenter(ci, ri) {
-  return { cx: colLeft[ci] + (ci < 41 ? 37 : 38)/2, cy: ri * ROW_PITCH + 21/2 };
+for (let c = 1; c < COLS; c++) {
+  colLeft[c] = colLeft[c - 1] + (c - 1 < 41 ? PITCH_N : PITCH_W);
 }
+const GRID_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 39 : 40);
+const GRID_HEIGHT = ROWS * ROW_PITCH;
 
-/* ── État de la map ── */
-const mapId   = new URLSearchParams(location.search).get('id');
-let mapData   = null;
-let cellData  = {};   // "x,y" → { color, icon, note }
-let dirty     = false;
-let readonly  = false;
+const mapId = new URLSearchParams(location.search).get('id');
+let mapData = null;
+let cellData = {};
+let dirty = false;
+let readonly = false;
 let currentUser = null;
 
-/* ── Outil actif ── */
-let currentTool  = 'pan';
+let currentTool = 'pan';
 let currentColor = 'rgba(255,100,0,0.5)';
-let currentIcon  = '⚔️';
+let currentIcon = '⚔️';
 let selectedKeys = new Set();
 let selectionAnchorKey = null;
 let undoStack = [];
 const MAX_UNDO = 50;
+
+let hoveredKey = null;
+let tooltipFrame = 0;
+let pendingTooltip = null;
+let noteKeys = [];
+let dragMoved = false;
+
+const viewport = document.getElementById('viewport');
+const coordsBar = document.getElementById('coords-bar');
+const tooltip = document.getElementById('tooltip');
+const notePopup = document.getElementById('note-popup');
+const noteInput = document.getElementById('note-input');
+
+const COLORS = [
+  'rgba(255,80,80,0.55)', 'rgba(255,160,0,0.55)',
+  'rgba(255,230,0,0.55)', 'rgba(80,200,80,0.55)',
+  'rgba(0,180,255,0.55)', 'rgba(130,80,255,0.55)',
+  'rgba(255,80,200,0.55)', 'rgba(255,255,255,0.35)',
+  'rgba(0,0,0,0.45)', 'rgba(191,176,123,0.55)'
+];
+const ICONS = ['⚔️','🛡️','💀','⭐','🏠','🔑','💰','🌿','🐉','🚩','❌','✅'];
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -454,118 +575,216 @@ function escapeHtml(value) {
   }[ch]));
 }
 
-/* ── Palette couleurs ── */
-const COLORS = [
-  'rgba(255,80,80,0.55)',   'rgba(255,160,0,0.55)',
-  'rgba(255,230,0,0.55)',   'rgba(80,200,80,0.55)',
-  'rgba(0,180,255,0.55)',   'rgba(130,80,255,0.55)',
-  'rgba(255,80,200,0.55)',  'rgba(255,255,255,0.35)',
-  'rgba(0,0,0,0.45)',       'rgba(191,176,123,0.55)',
-];
-const ICONS = ['⚔️','🛡️','💀','⭐','🏠','🔑','💰','🌿','🐉','🚩','❌','✅'];
-
-/* ── Init palette ── */
-const colorGrid = document.getElementById('color-grid');
-COLORS.forEach((c, i) => {
-  const sw = document.createElement('div');
-  sw.className = 'color-swatch' + (i === 0 ? ' active' : '');
-  sw.style.backgroundColor = c;
-  sw.dataset.color = c;
-  sw.title = c;
-  sw.addEventListener('click', () => {
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-    sw.classList.add('active');
-    currentColor = c;
-    setTool('color');
-    if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
-  });
-  colorGrid.appendChild(sw);
-});
-currentColor = COLORS[0];
-
-document.getElementById('custom-color').addEventListener('input', function () {
-  const hex = this.value;
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  currentColor = `rgba(${r},${g},${b},0.55)`;
-  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-  setTool('color');
-  if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
-});
-
-const iconGrid = document.getElementById('icon-grid');
-ICONS.forEach((ic, i) => {
-  const btn = document.createElement('button');
-  btn.className = 'icon-btn' + (i === 0 ? ' active' : '');
-  btn.textContent = ic;
-  btn.title = ic;
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentIcon = ic;
-    setTool('icon');
-    if (selectedKeys.size) applyToolToKeys('icon', Array.from(selectedKeys));
-  });
-  iconGrid.appendChild(btn);
-});
-
-/* ── Outil ── */
-function setTool(tool) {
-  if (readonly && tool !== 'pan') tool = 'pan';
-  currentTool = tool;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('tool-' + tool);
-  if (el) el.classList.add('active');
-  const vp = document.getElementById('viewport');
-  vp.classList.toggle('tool-active', tool !== 'pan');
-  updateCursor();
+function cellWidth(ci) {
+  return ci < 41 ? 37 : 38;
 }
-window.setTool = setTool;
 
-/* ── Build table ── */
-const tbody = document.getElementById('map-body');
-const frag  = document.createDocumentFragment();
-for (let ri = 0; ri < ROWS; ri++) {
-  const tr = document.createElement('tr');
-  for (let ci = 0; ci < COLS; ci++) {
-    const td = document.createElement('td');
-    td.dataset.x = X_MIN + ci;
-    td.dataset.y = Y_MIN + ri;
-    tr.appendChild(td);
+function keyToCoords(key) {
+  const [x, y] = key.split(',').map(Number);
+  return { x, y };
+}
+
+function coordsToIndex(x, y) {
+  const ci = x - X_MIN;
+  const ri = y - Y_MIN;
+  if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return null;
+  return { ci, ri };
+}
+
+function isValidKey(key) {
+  const { x, y } = keyToCoords(key);
+  return !!coordsToIndex(x, y);
+}
+
+function cellPixelRect(cell) {
+  const left = colLeft[cell.ci];
+  const top = cell.ri * ROW_PITCH;
+  const right = Math.min(cell.ci === COLS - 1 ? GRID_WIDTH : colLeft[cell.ci + 1], MAP_WIDTH);
+  const bottom = Math.min(top + ROW_PITCH, MAP_HEIGHT);
+  return { left, top, width: right - left, height: bottom - top };
+}
+
+function cellCenter(x, y) {
+  const index = coordsToIndex(x, y);
+  if (!index) return null;
+  return [
+    -(index.ri * ROW_PITCH + 10.5),
+    colLeft[index.ci] + cellWidth(index.ci) / 2
+  ];
+}
+
+function pointToCell(latlng) {
+  const px = latlng.lng;
+  const py = -latlng.lat;
+  if (px < 0 || py < 0 || px > MAP_WIDTH || py > MAP_HEIGHT) return null;
+
+  const ri = Math.floor(py / ROW_PITCH);
+  if (ri < 0 || ri >= ROWS) return null;
+
+  let lo = 0, hi = COLS - 1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const left = colLeft[mid];
+    const right = Math.min(mid === COLS - 1 ? GRID_WIDTH : colLeft[mid + 1], MAP_WIDTH);
+    if (px < left) hi = mid - 1;
+    else if (px >= right) lo = mid + 1;
+    else return { x: X_MIN + mid, y: Y_MIN + ri, ci: mid, ri };
   }
-  frag.appendChild(tr);
-}
-tbody.appendChild(frag);
-
-/* ── Rendu d'une cellule ── */
-function renderCell(td, key) {
-  const d = cellData[key];
-  td.style.backgroundColor = d?.color || '';
-  td.title = d?.note || '';
-  let inner = '';
-  if (d?.icon) inner += `<span class="cell-icon" title="${escapeHtml(d.note || '')}">${escapeHtml(d.icon)}</span>`;
-  td.innerHTML = inner;
+  return null;
 }
 
-function applyAllCells() {
-  Object.entries(cellData).forEach(([key, _]) => {
-    const [x, y] = key.split(',').map(Number);
-    const ci = x - X_MIN, ri = y - Y_MIN;
-    if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
-    const td = tbody.rows[ri]?.cells[ci];
-    if (td) renderCell(td, key);
-  });
+function makeSvgElement(tag, attrs = {}) {
+  const node = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+  return node;
+}
+
+const map = L.map('leaflet-map', {
+  crs: L.CRS.Simple,
+  attributionControl: false,
+  zoomControl: false,
+  scrollWheelZoom: false,
+  zoomSnap: ZOOM_STEP,
+  zoomDelta: ZOOM_STEP,
+  minZoom: ABSOLUTE_MIN_ZOOM,
+  maxZoom: MAX_ZOOM,
+  doubleClickZoom: false,
+  inertia: false
+});
+
+L.imageOverlay('img/map 1.29.jpg', bounds, {
+  alt: 'Carte Dofus Retro 1.29',
+  interactive: false
+}).addTo(map);
+
+const overlayElement = L.DomUtil.create('div', 'map-cell-overlay', map.getPanes().overlayPane);
+const overlaySvg = makeSvgElement('svg', {
+  viewBox: `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`,
+  preserveAspectRatio: 'none'
+});
+const colorLayer = makeSvgElement('g');
+const iconLayer = makeSvgElement('g');
+const hoverRect = makeSvgElement('rect', {
+  class: 'map-hover-rect',
+  display: 'none',
+  fill: '#FFE48A',
+  'fill-opacity': '0.42',
+  stroke: '#FFF0BF',
+  'stroke-width': '2',
+  'stroke-opacity': '0.9'
+});
+const selectionLayer = makeSvgElement('g');
+const gridLayer = makeSvgElement('g', {
+  stroke: '#D8CBAA',
+  'stroke-width': '1.5',
+  'stroke-opacity': '0.42',
+  fill: 'none'
+});
+
+overlaySvg.append(colorLayer, iconLayer, hoverRect, selectionLayer, gridLayer);
+overlayElement.appendChild(overlaySvg);
+
+function addGridLine(x1, y1, x2, y2) {
+  gridLayer.appendChild(makeSvgElement('line', {
+    class: 'map-grid-line',
+    x1, y1, x2, y2
+  }));
+}
+
+function buildGrid() {
+  for (let ci = 0; ci < COLS; ci++) {
+    const left = colLeft[ci];
+    addGridLine(left, 0, left, MAP_HEIGHT);
+    if (ci === COLS - 1) addGridLine(Math.min(GRID_WIDTH, MAP_WIDTH), 0, Math.min(GRID_WIDTH, MAP_WIDTH), MAP_HEIGHT);
+  }
+  for (let ri = 0; ri <= ROWS; ri++) {
+    const top = Math.min(ri * ROW_PITCH, GRID_HEIGHT, MAP_HEIGHT);
+    addGridLine(0, top, MAP_WIDTH, top);
+    if (top >= MAP_HEIGHT) break;
+  }
+}
+
+function syncOverlay() {
+  const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+  const se = map.latLngToLayerPoint(bounds.getSouthEast());
+  L.DomUtil.setPosition(overlayElement, nw);
+  overlayElement.style.width = `${Math.max(0, se.x - nw.x)}px`;
+  overlayElement.style.height = `${Math.max(0, se.y - nw.y)}px`;
+}
+
+function renderCellByKey(key) {
+  const { x, y } = keyToCoords(key);
+  const index = coordsToIndex(x, y);
+  if (!index) return;
+
+  colorLayer.querySelector(`[data-key="${CSS.escape(key)}"]`)?.remove();
+  iconLayer.querySelector(`[data-key="${CSS.escape(key)}"]`)?.remove();
+
+  const data = cellData[key];
+  if (!data) return;
+
+  const rect = cellPixelRect(index);
+  if (data.color) {
+    colorLayer.appendChild(makeSvgElement('rect', {
+      class: 'map-cell-rect',
+      'data-key': key,
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+      fill: data.color
+    }));
+  }
+
+  if (data.icon) {
+    const icon = makeSvgElement('text', {
+      class: 'map-cell-icon',
+      'data-key': key,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2 + 1
+    });
+    icon.textContent = data.icon;
+    iconLayer.appendChild(icon);
+  }
 }
 
 function renderAllCells() {
-  for (let ri = 0; ri < ROWS; ri++) {
-    for (let ci = 0; ci < COLS; ci++) {
-      const td = tbody.rows[ri]?.cells[ci];
-      if (!td) continue;
-      const key = `${X_MIN + ci},${Y_MIN + ri}`;
-      renderCell(td, key);
-    }
-  }
+  colorLayer.replaceChildren();
+  iconLayer.replaceChildren();
+  Object.keys(cellData).forEach(renderCellByKey);
   renderSelection();
+}
+
+function applyAllCells() {
+  renderAllCells();
+}
+
+function updateSelectionStatus() {
+  const count = selectedKeys.size;
+  document.getElementById('selection-status').textContent = `${count} case${count > 1 ? 's' : ''}`;
+}
+
+function renderSelection() {
+  selectionLayer.replaceChildren();
+  selectedKeys.forEach(key => {
+    const { x, y } = keyToCoords(key);
+    const index = coordsToIndex(x, y);
+    if (!index) return;
+    const rect = cellPixelRect(index);
+    selectionLayer.appendChild(makeSvgElement('rect', {
+      class: 'map-selection-rect',
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+      fill: '#1f8cff',
+      'fill-opacity': '0.22',
+      stroke: '#ffffff',
+      'stroke-width': '2',
+      'stroke-opacity': '0.95'
+    }));
+  });
+  updateSelectionStatus();
 }
 
 function pushUndoState() {
@@ -578,29 +797,6 @@ function undoLastChange() {
   cellData = undoStack.pop();
   renderAllCells();
   markDirty();
-}
-
-function keyToCoords(key) {
-  const [x, y] = key.split(',').map(Number);
-  return { x, y };
-}
-
-function getCellByKey(key) {
-  const { x, y } = keyToCoords(key);
-  const ci = x - X_MIN, ri = y - Y_MIN;
-  if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return null;
-  return tbody.rows[ri]?.cells[ci] || null;
-}
-
-function updateSelectionStatus() {
-  const count = selectedKeys.size;
-  document.getElementById('selection-status').textContent = `${count} case${count > 1 ? 's' : ''}`;
-}
-
-function renderSelection() {
-  document.querySelectorAll('td.selected').forEach(td => td.classList.remove('selected'));
-  selectedKeys.forEach(key => getCellByKey(key)?.classList.add('selected'));
-  updateSelectionStatus();
 }
 
 function clearSelection() {
@@ -624,13 +820,13 @@ function selectOneCell(key) {
 
 function selectRangeTo(key, additive) {
   const anchor = selectionAnchorKey || key;
-  const a = keyToCoords(anchor), b = keyToCoords(key);
+  const a = keyToCoords(anchor);
+  const b = keyToCoords(key);
   if (!additive) selectedKeys.clear();
-  const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x);
-  const y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y);
-  for (let y = y1; y <= y2; y++) {
-    for (let x = x1; x <= x2; x++) {
-      selectedKeys.add(`${x},${y}`);
+  for (let y = Math.min(a.y, b.y); y <= Math.max(a.y, b.y); y++) {
+    for (let x = Math.min(a.x, b.x); x <= Math.max(a.x, b.x); x++) {
+      const nextKey = `${x},${y}`;
+      if (isValidKey(nextKey)) selectedKeys.add(nextKey);
     }
   }
   renderSelection();
@@ -639,26 +835,23 @@ function selectRangeTo(key, additive) {
 function selectAllCells() {
   selectedKeys.clear();
   for (let y = Y_MIN; y <= Y_MAX; y++) {
-    for (let x = X_MIN; x <= X_MAX; x++) {
-      selectedKeys.add(`${x},${y}`);
-    }
+    for (let x = X_MIN; x <= X_MAX; x++) selectedKeys.add(`${x},${y}`);
   }
   selectionAnchorKey = `${X_MIN},${Y_MIN}`;
   renderSelection();
 }
 
-function handleSelectionClick(key, e) {
-  if (e.shiftKey) {
-    selectRangeTo(key, e.ctrlKey || e.metaKey);
+function handleSelectionClick(key, event) {
+  if (event.shiftKey) {
+    selectRangeTo(key, event.ctrlKey || event.metaKey);
     return true;
   }
-  if (e.ctrlKey || e.metaKey) {
+  if (event.ctrlKey || event.metaKey) {
     toggleCellSelection(key);
     return true;
   }
   selectOneCell(key);
-  if (currentTool === 'pan') return true;
-  return false;
+  return currentTool === 'pan';
 }
 
 function actionKeysFor(targetKey) {
@@ -666,23 +859,18 @@ function actionKeysFor(targetKey) {
 }
 
 function applyToolToKeys(tool, keys) {
-  if (!keys.length) return;
+  const validKeys = keys.filter(isValidKey);
+  if (!validKeys.length) return;
   pushUndoState();
-  keys.forEach(key => {
-    const td = getCellByKey(key);
-    if (!td) return;
+  validKeys.forEach(key => {
     if (tool === 'color') {
       cellData[key] = { ...cellData[key], color: currentColor };
-      renderCell(td, key);
     } else if (tool === 'icon') {
       cellData[key] = { ...cellData[key], icon: currentIcon };
-      renderCell(td, key);
     } else if (tool === 'erase') {
       delete cellData[key];
-      td.style.backgroundColor = '';
-      td.innerHTML = '';
-      td.title = '';
     }
+    renderCellByKey(key);
   });
   renderSelection();
   markDirty();
@@ -691,204 +879,148 @@ function applyToolToKeys(tool, keys) {
 function deleteSelectionOrHoveredCell(fallbackKey = null) {
   if (readonly) return;
   const keys = selectedKeys.size ? Array.from(selectedKeys) : (fallbackKey || hoveredKey ? [fallbackKey || hoveredKey] : []);
-  if (!keys.length) return;
-  applyToolToKeys('erase', keys);
+  if (keys.length) applyToolToKeys('erase', keys);
 }
 
-/* ── Pan ── */
-const mc = document.getElementById('map-container');
-const vp = document.getElementById('viewport');
-let tx = 0, ty = 0, zoom = 1;
-const MIN_ZOOM = 0.5, MAX_ZOOM = 2.5, ZOOM_STEP = 0.15;
-const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
-const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
+function setTool(tool) {
+  if (readonly && tool !== 'pan') tool = 'pan';
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(button => button.classList.remove('active'));
+  document.getElementById(`tool-${tool}`)?.classList.add('active');
+  viewport.classList.toggle('tool-active', tool !== 'pan');
+}
+window.setTool = setTool;
 
-function clampPan() {
-  const vw = vp.clientWidth;
-  const vh = vp.clientHeight;
-  const scaledWidth = MAP_WIDTH * zoom;
-  const scaledHeight = MAP_HEIGHT * zoom;
-
-  tx = scaledWidth <= vw
-    ? Math.round((vw - scaledWidth) / 2)
-    : Math.min(0, Math.max(Math.round(vw - scaledWidth), tx));
-
-  ty = scaledHeight <= vh
-    ? Math.round((vh - scaledHeight) / 2)
-    : Math.min(0, Math.max(Math.round(vh - scaledHeight), ty));
+function getViewportMinZoom() {
+  const size = map.getSize();
+  const coverZoom = Math.max(
+    Math.log2(size.x / MAP_WIDTH),
+    Math.log2(size.y / MAP_HEIGHT)
+  );
+  return Math.max(ABSOLUTE_MIN_ZOOM, Math.ceil(coverZoom / ZOOM_STEP) * ZOOM_STEP);
 }
 
-function viewportPoint(clientX, clientY) {
-  const rect = vp.getBoundingClientRect();
-  return { x: clientX - rect.left, y: clientY - rect.top };
+function updateZoomLabel() {
+  document.getElementById('zoom-label').textContent = `${Math.round(Math.pow(2, map.getZoom()) * 100)}%`;
 }
 
-function applyTransform() {
-  clampPan();
-  mc.style.transformOrigin = '0 0';
-  mc.style.transform = `translate(${tx}px,${ty}px) scale(${zoom})`;
-  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
-}
-function centerOn(x, y) {
-  const ci = x - X_MIN, ri = y - Y_MIN;
-  if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return;
-  const { cx, cy } = cellCenter(ci, ri);
-  tx = Math.round(vp.clientWidth / 2 - cx * zoom);
-  ty = Math.round(vp.clientHeight / 2 - cy * zoom);
-  applyTransform();
+function applyZoomLimits() {
+  const minZoom = getViewportMinZoom();
+  map.setMinZoom(minZoom);
+  if (map.getZoom() < minZoom) map.setZoom(minZoom, { animate: false });
+  updateZoomLabel();
 }
 
-function setZoom(nextZoom, anchorX = vp.clientWidth / 2, anchorY = vp.clientHeight / 2) {
-  const oldZoom = zoom;
-  zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
-  if (zoom === oldZoom) return;
+function clampPanToImage() {
+  const zoom = map.getZoom();
+  const size = map.getSize();
+  const half = size.divideBy(2);
+  const nw = map.project(bounds.getNorthWest(), zoom);
+  const se = map.project(bounds.getSouthEast(), zoom);
+  const center = map.project(map.getCenter(), zoom);
+  let x = center.x;
+  let y = center.y;
 
-  const mapX = (anchorX - tx) / oldZoom;
-  const mapY = (anchorY - ty) / oldZoom;
-  tx = Math.round(anchorX - mapX * zoom);
-  ty = Math.round(anchorY - mapY * zoom);
-  applyTransform();
-}
+  if (se.x - nw.x <= size.x) x = (nw.x + se.x) / 2;
+  else x = Math.max(nw.x + half.x, Math.min(se.x - half.x, x));
 
-let dragging = false, dragMoved = false, ox, oy, tx0, ty0;
+  if (se.y - nw.y <= size.y) y = (nw.y + se.y) / 2;
+  else y = Math.max(nw.y + half.y, Math.min(se.y - half.y, y));
 
-function updateCursor() {
-  if (dragging) vp.style.cursor = 'grabbing';
-  else vp.style.cursor = currentTool === 'pan' ? 'grab' : 'crosshair';
-}
-
-vp.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
-  dragMoved = false;
-  dragging = true;
-  ox = e.clientX; oy = e.clientY; tx0 = tx; ty0 = ty;
-  vp.classList.add('grabbing');
-  updateCursor();
-  e.preventDefault();
-});
-window.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const dx = e.clientX - ox, dy = e.clientY - oy;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
-  tx = tx0 + dx; ty = ty0 + dy; applyTransform();
-});
-window.addEventListener('mouseup', () => {
-  dragging = false;
-  vp.classList.remove('grabbing');
-  updateCursor();
-  setTimeout(() => { dragMoved = false; }, 0);
-});
-
-document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + ZOOM_STEP));
-document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - ZOOM_STEP));
-document.getElementById('zoom-reset').addEventListener('click', () => setZoom(1));
-vp.addEventListener('wheel', e => {
-  e.preventDefault();
-  const anchor = viewportPoint(e.clientX, e.clientY);
-  setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), anchor.x, anchor.y);
-}, { passive: false });
-window.addEventListener('resize', applyTransform);
-
-/* ── Tooltip ── */
-const tooltip   = document.getElementById('tooltip');
-const coordsBar = document.getElementById('coords-bar');
-let hoveredKey = null;
-
-document.getElementById('map-table').addEventListener('mouseover', e => {
-  const td = e.target.closest('td[data-x]'); if (!td) return;
-  const x = td.dataset.x, y = td.dataset.y;
-  const key = `${x},${y}`;
-  hoveredKey = key;
-  const d = cellData[key];
-  let txt = `[${x}, ${y}]`;
-  if (d?.note) txt += ` — ${d.note}`;
-  tooltip.textContent = txt;
-  tooltip.style.display = 'block';
-  coordsBar.textContent = `[${x}, ${y}]`;
-});
-document.getElementById('map-table').addEventListener('mouseout', e => {
-  if (!e.target.closest('td[data-x]')) return;
-  hoveredKey = null;
-  tooltip.style.display = 'none'; coordsBar.textContent = '[–, –]';
-});
-window.addEventListener('mousemove', e => {
-  tooltip.style.left = (e.clientX + 14) + 'px';
-  tooltip.style.top  = (e.clientY - 30) + 'px';
-});
-
-/* ── Click sur cellule ── */
-let noteTd = null, noteKeys = [];
-
-document.getElementById('map-table').addEventListener('click', e => {
-  if (dragMoved) { dragMoved = false; return; }
-  const td = e.target.closest('td[data-x]'); if (!td) return;
-  if (readonly) return;
-  const x = +td.dataset.x, y = +td.dataset.y;
-  const key = `${x},${y}`;
-  if (handleSelectionClick(key, e)) return;
-  const keys = actionKeysFor(key);
-
-  if (currentTool === 'color') {
-    applyToolToKeys('color', keys);
-  } else if (currentTool === 'icon') {
-    applyToolToKeys('icon', keys);
-  } else if (currentTool === 'note') {
-    openNotePopup(td, keys, e);
-  } else if (currentTool === 'erase') {
-    applyToolToKeys('erase', keys);
+  if (Math.abs(x - center.x) > 0.5 || Math.abs(y - center.y) > 0.5) {
+    map.panTo(map.unproject([x, y], zoom), { animate: false });
   }
-});
+}
 
-document.getElementById('map-table').addEventListener('contextmenu', e => {
-  const td = e.target.closest('td[data-x]'); if (!td) return;
-  e.preventDefault();
-  if (readonly) return;
-  const key = `${td.dataset.x},${td.dataset.y}`;
-  clearSelection();
-  deleteSelectionOrHoveredCell(key);
-});
+function setZoomAt(point, nextZoom) {
+  const zoom = Math.max(map.getMinZoom(), Math.min(MAX_ZOOM, nextZoom));
+  if (zoom === map.getZoom()) return;
+  map.setZoomAround(point, zoom, { animate: false });
+  clampPanToImage();
+  updateZoomLabel();
+}
 
-/* ── Note popup ── */
-const notePopup = document.getElementById('note-popup');
-const noteInput = document.getElementById('note-input');
+function zoomAtCursor(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const direction = event.deltaY < 0 ? 1 : -1;
+  setZoomAt(map.mouseEventToContainerPoint(event), map.getZoom() + direction * ZOOM_STEP);
+}
 
-function openNotePopup(td, keys, e) {
-  noteTd = td; noteKeys = keys;
+function centerOn(x, y) {
+  const center = cellCenter(x, y);
+  if (!center) return;
+  map.panTo(center, { animate: true });
+}
+
+function clearTooltip() {
+  tooltip.classList.add('is-hidden');
+  tooltip.textContent = '';
+  pendingTooltip = null;
+}
+
+function moveTooltip(event, text) {
+  pendingTooltip = { x: event.clientX + 14, y: event.clientY + 14, text };
+  if (tooltipFrame) return;
+  tooltipFrame = requestAnimationFrame(() => {
+    tooltipFrame = 0;
+    if (!pendingTooltip) return;
+    tooltip.textContent = pendingTooltip.text;
+    tooltip.style.transform = `translate3d(${pendingTooltip.x}px, ${pendingTooltip.y}px, 0)`;
+    tooltip.classList.remove('is-hidden');
+    pendingTooltip = null;
+  });
+}
+
+function clearHoverCell() {
+  hoveredKey = null;
+  hoverRect.setAttribute('display', 'none');
+}
+
+function hoverCell(cell) {
+  const key = `${cell.x},${cell.y}`;
+  if (hoveredKey === key) return;
+  hoveredKey = key;
+  const rect = cellPixelRect(cell);
+  hoverRect.setAttribute('x', rect.left);
+  hoverRect.setAttribute('y', rect.top);
+  hoverRect.setAttribute('width', rect.width);
+  hoverRect.setAttribute('height', rect.height);
+  hoverRect.removeAttribute('display');
+}
+
+function handlePointerMove(event) {
+  const cell = pointToCell(map.mouseEventToLatLng(event));
+  if (!cell) {
+    coordsBar.textContent = '[-, -]';
+    clearHoverCell();
+    clearTooltip();
+    return;
+  }
+  hoverCell(cell);
+  const key = `${cell.x},${cell.y}`;
+  const note = cellData[key]?.note;
+  const text = note ? `[${cell.x}, ${cell.y}] - ${note}` : `[${cell.x}, ${cell.y}]`;
+  coordsBar.textContent = `[${cell.x}, ${cell.y}]`;
+  moveTooltip(event, text);
+}
+
+function handlePointerLeave() {
+  coordsBar.textContent = '[-, -]';
+  clearHoverCell();
+  clearTooltip();
+}
+
+function openNotePopup(keys, event) {
+  noteKeys = keys;
   noteInput.value = keys.length === 1 ? (cellData[keys[0]]?.note || '') : '';
   noteInput.placeholder = keys.length > 1 ? `Note pour ${keys.length} cases...` : 'Votre note...';
   notePopup.style.display = 'block';
-  const px = Math.min(e.clientX + 10, window.innerWidth - 220);
-  const py = Math.min(e.clientY + 10, window.innerHeight - 130);
-  notePopup.style.left = px + 'px';
-  notePopup.style.top  = py + 'px';
+  notePopup.style.left = `${Math.min(event.clientX + 10, window.innerWidth - 220)}px`;
+  notePopup.style.top = `${Math.min(event.clientY + 10, window.innerHeight - 130)}px`;
   setTimeout(() => noteInput.focus(), 50);
 }
 
-document.getElementById('btn-note-ok').addEventListener('click', () => {
-  const val = noteInput.value.trim();
-  if (noteKeys.length) {
-    pushUndoState();
-    noteKeys.forEach(key => {
-      const td = getCellByKey(key);
-      if (!td) return;
-      if (val) cellData[key] = { ...cellData[key], note: val };
-      else if (cellData[key]) delete cellData[key].note;
-      renderCell(td, key);
-    });
-    renderSelection();
-    markDirty();
-  }
-  notePopup.style.display = 'none'; noteTd = null; noteKeys = [];
-});
-document.getElementById('btn-note-cancel').addEventListener('click', () => {
-  notePopup.style.display = 'none'; noteTd = null; noteKeys = [];
-});
-noteInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('btn-note-ok').click(); }
-  if (e.key === 'Escape') document.getElementById('btn-note-cancel').click();
-});
-
-/* ── Save ── */
 function markDirty() {
   if (readonly) return;
   dirty = true;
@@ -898,46 +1030,21 @@ function markDirty() {
 
 async function saveMap() {
   if (readonly) return;
-  const btn = document.getElementById('btn-save');
-  btn.disabled = true;
+  const button = document.getElementById('btn-save');
+  button.disabled = true;
   const name = document.getElementById('map-title-input').value.trim() || 'Sans titre';
   const isPublic = document.getElementById('map-public-toggle').checked;
   const result = await window.DofusApi.updateMap(mapId, { name, cells: cellData, isPublic })
     .then(() => ({ ok: true }))
     .catch(() => ({ ok: false }));
-  btn.disabled = false;
+  button.disabled = false;
   if (result.ok) {
     dirty = false;
-    const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('save-status').textContent = `Sauvegardé à ${now}`;
     document.getElementById('save-status').style.color = '#88cc88';
   }
 }
-
-document.getElementById('btn-save').addEventListener('click', saveMap);
-document.addEventListener('keydown', e => {
-  const tag = e.target?.tagName?.toLowerCase();
-  const isTyping = tag === 'input' || tag === 'textarea';
-  if (!isTyping && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-    e.preventDefault();
-    undoLastChange();
-    return;
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveMap(); }
-  if (!isTyping && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-    e.preventDefault();
-    selectAllCells();
-  }
-  if (!isTyping && (e.key === 'Delete' || e.key === 'Del')) {
-    e.preventDefault();
-    deleteSelectionOrHoveredCell();
-  }
-  if (!isTyping && e.key === 'Escape') clearSelection();
-});
-
-/* ── Renommer ── */
-document.getElementById('map-title-input').addEventListener('input', markDirty);
-document.getElementById('map-public-toggle').addEventListener('change', markDirty);
 
 function applyReadonlyMode() {
   readonly = !!mapData.readonly;
@@ -952,51 +1059,208 @@ function applyReadonlyMode() {
   }
 }
 
-/* ── Search ── */
-document.getElementById('go-btn').addEventListener('click', () => {
-  const x = parseInt(document.getElementById('sx').value);
-  const y = parseInt(document.getElementById('sy').value);
-  if (!isNaN(x) && !isNaN(y)) centerOn(x, y);
-});
-['sx','sy'].forEach(id =>
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('go-btn').click();
-  })
-);
+function initPalette() {
+  const colorGrid = document.getElementById('color-grid');
+  COLORS.forEach((color, index) => {
+    const swatch = document.createElement('div');
+    swatch.className = `color-swatch${index === 0 ? ' active' : ''}`;
+    swatch.style.backgroundColor = color;
+    swatch.dataset.color = color;
+    swatch.title = color;
+    swatch.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(item => item.classList.remove('active'));
+      swatch.classList.add('active');
+      currentColor = color;
+      setTool('color');
+      if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
+    });
+    colorGrid.appendChild(swatch);
+  });
+  currentColor = COLORS[0];
 
-/* ── Warn avant de quitter sans sauvegarder ── */
-window.addEventListener('beforeunload', e => {
-  if (dirty) { e.preventDefault(); e.returnValue = ''; }
-});
+  document.getElementById('custom-color').addEventListener('input', event => {
+    const hex = event.target.value;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    currentColor = `rgba(${r},${g},${b},0.55)`;
+    document.querySelectorAll('.color-swatch').forEach(item => item.classList.remove('active'));
+    setTool('color');
+    if (selectedKeys.size) applyToolToKeys('color', Array.from(selectedKeys));
+  });
 
-/* ── Chargement de la map ── */
-(async () => {
-  if (!mapId) { window.location.href = 'maps.html'; return; }
+  const iconGrid = document.getElementById('icon-grid');
+  ICONS.forEach((icon, index) => {
+    const button = document.createElement('button');
+    button.className = `icon-btn${index === 0 ? ' active' : ''}`;
+    button.textContent = icon;
+    button.title = icon;
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.icon-btn').forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+      currentIcon = icon;
+      setTool('icon');
+      if (selectedKeys.size) applyToolToKeys('icon', Array.from(selectedKeys));
+    });
+    iconGrid.appendChild(button);
+  });
+}
+
+function initEvents() {
+  map.getContainer().addEventListener('wheel', zoomAtCursor, { passive: false });
+  map.getContainer().addEventListener('pointermove', handlePointerMove, { passive: true });
+  map.getContainer().addEventListener('pointerleave', handlePointerLeave);
+
+  map.on('dragstart', () => { dragMoved = false; });
+  map.on('drag', () => { dragMoved = true; });
+  map.on('drag dragend zoomend', () => {
+    clampPanToImage();
+    updateZoomLabel();
+  });
+  map.on('resize', () => {
+    applyZoomLimits();
+    clampPanToImage();
+    syncOverlay();
+  });
+  map.on('move zoom viewreset', syncOverlay);
+
+  map.on('click', event => {
+    if (dragMoved) {
+      dragMoved = false;
+      return;
+    }
+    if (readonly) return;
+    const cell = pointToCell(event.latlng);
+    if (!cell) return;
+    const key = `${cell.x},${cell.y}`;
+    if (handleSelectionClick(key, event.originalEvent)) return;
+    const keys = actionKeysFor(key);
+    if (currentTool === 'color') applyToolToKeys('color', keys);
+    else if (currentTool === 'icon') applyToolToKeys('icon', keys);
+    else if (currentTool === 'note') openNotePopup(keys, event.originalEvent);
+    else if (currentTool === 'erase') applyToolToKeys('erase', keys);
+  });
+
+  map.on('contextmenu', event => {
+    event.originalEvent.preventDefault();
+    if (readonly) return;
+    const cell = pointToCell(event.latlng);
+    if (!cell) return;
+    clearSelection();
+    deleteSelectionOrHoveredCell(`${cell.x},${cell.y}`);
+  });
+
+  document.getElementById('zoom-in').addEventListener('click', () => setZoomAt(map.getSize().divideBy(2), map.getZoom() + ZOOM_STEP));
+  document.getElementById('zoom-out').addEventListener('click', () => setZoomAt(map.getSize().divideBy(2), map.getZoom() - ZOOM_STEP));
+  document.getElementById('zoom-reset').addEventListener('click', () => {
+    map.setView(cellCenter(0, 0), Math.max(0, map.getMinZoom()), { animate: false });
+    clampPanToImage();
+    updateZoomLabel();
+  });
+
+  document.getElementById('btn-note-ok').addEventListener('click', () => {
+    const value = noteInput.value.trim();
+    if (noteKeys.length) {
+      pushUndoState();
+      noteKeys.forEach(key => {
+        if (value) cellData[key] = { ...cellData[key], note: value };
+        else if (cellData[key]) delete cellData[key].note;
+        renderCellByKey(key);
+      });
+      renderSelection();
+      markDirty();
+    }
+    notePopup.style.display = 'none';
+    noteKeys = [];
+  });
+  document.getElementById('btn-note-cancel').addEventListener('click', () => {
+    notePopup.style.display = 'none';
+    noteKeys = [];
+  });
+  noteInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      document.getElementById('btn-note-ok').click();
+    }
+    if (event.key === 'Escape') document.getElementById('btn-note-cancel').click();
+  });
+
+  document.getElementById('btn-save').addEventListener('click', saveMap);
+  document.getElementById('map-title-input').addEventListener('input', markDirty);
+  document.getElementById('map-public-toggle').addEventListener('change', markDirty);
+
+  document.addEventListener('keydown', event => {
+    const tag = event.target?.tagName?.toLowerCase();
+    const isTyping = tag === 'input' || tag === 'textarea';
+    if (!isTyping && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      undoLastChange();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault();
+      saveMap();
+      return;
+    }
+    if (!isTyping && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+      event.preventDefault();
+      selectAllCells();
+      return;
+    }
+    if (!isTyping && (event.key === 'Delete' || event.key === 'Del')) {
+      event.preventDefault();
+      deleteSelectionOrHoveredCell();
+      return;
+    }
+    if (!isTyping && event.key === 'Escape') clearSelection();
+  });
+
+  window.addEventListener('beforeunload', event => {
+    if (dirty) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+}
+
+async function loadMap() {
+  if (!mapId) {
+    window.location.href = 'maps.html';
+    return;
+  }
 
   currentUser = await window.DofusApi.currentUser();
-
   mapData = await window.DofusApi.getMap(mapId).catch(() => null);
-  if (!mapData) { window.location.href = currentUser ? 'maps.html' : 'community.html'; return; }
+  if (!mapData) {
+    window.location.href = currentUser ? 'maps.html' : 'community.html';
+    return;
+  }
+
   cellData = mapData.cells || {};
   document.getElementById('map-title-input').value = mapData.name;
   document.getElementById('map-public-toggle').checked = !!mapData.isPublic;
-  document.title = `${mapData.name} — Dofus Rétro`;
+  document.title = `${mapData.name} - Dofus Retro`;
   document.querySelector('.back-link').href = mapData.readonly ? 'community.html' : 'maps.html';
   document.querySelector('.back-link').textContent = mapData.readonly ? '← Communauté' : '← Mes cartes';
   applyReadonlyMode();
-
-  // Applique les cellules sauvegardées
-  requestAnimationFrame(() => {
-    applyAllCells();
-    requestAnimationFrame(() => centerOn(0, 0));
-  });
+  applyAllCells();
+  centerOn(0, 0);
 
   if (!readonly) {
-    document.getElementById('save-status').textContent = 'À jour';
+    document.getElementById('save-status').textContent = 'A jour';
     document.getElementById('save-status').style.color = '#88cc88';
   }
-})();
+}
 
+initPalette();
+buildGrid();
+map.setView(cellCenter(0, 0), 0, { animate: false });
+applyZoomLimits();
+syncOverlay();
+clampPanToImage();
+updateZoomLabel();
+initEvents();
+loadMap();
 })();
 </script>
 </body>

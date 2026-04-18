@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dofus Retro - Test Leaflet</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  integrity="sha256-p4NxAoJBhIINfQHVaf6b7qC8hAABPHgW9Qf+htG0d98=" crossorigin="">
+<title>Dofus Retro - Carte interactive</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   * { box-sizing: border-box; }
   html, body, #leaflet-map {
@@ -175,7 +174,7 @@
 <div class="topbar">
   <div class="topbar-left">
     <a class="link" href="maps.html">Retour</a>
-    <span class="title">Test Leaflet - grille Dofus Retro</span>
+    <span class="title">Carte interactive - grille Dofus Retro</span>
   </div>
   <div class="topbar-right">
     <button class="btn" id="home-btn" type="button">[0, 0]</button>
@@ -185,8 +184,7 @@
 <div class="coords" id="coords">Survolez une case</div>
 <div class="cursor-tooltip is-hidden" id="cursor-tooltip"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function () {
   const X_MIN = -91, X_MAX = 43;
