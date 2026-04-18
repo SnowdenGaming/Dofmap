@@ -2,256 +2,662 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dofus Rétro 1.29 — Accueil</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dofus Retro 1.29 - Accueil</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
 
   :root {
-    --parchment:  #E8DBC8;
-    --parchment2: #D9C9AE;
-    --dark:       #3A3520;
-    --olive:      #58533A;
-    --gold:       #BFB07B;
-    --gold-light: #D4C48A;
-    --gold-dark:  #8A7A50;
-    --ink:        #2A2515;
+    --paper: #E8DBC8;
+    --paper-soft: #F1E7D3;
+    --paper-deep: #D6C3A4;
+    --ink: #272214;
+    --mud: #3A3520;
+    --olive: #58533A;
+    --gold: #BFB07B;
+    --gold-soft: #D4C48A;
+    --gold-dark: #8A7A50;
+    --moss: #587050;
+    --water: #55747A;
+    --brick: #8B5143;
+    --shadow: rgba(42, 37, 21, 0.2);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { min-height: 100%; }
 
   body {
-    background-color: var(--parchment);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    color: var(--ink);
-    font-family: 'IM Fell English', Georgia, serif;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    background:
+      linear-gradient(180deg, rgba(241, 231, 211, 0.88), rgba(232, 219, 200, 0.96)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='360' height='360' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: "IM Fell English", Georgia, serif;
   }
 
-  /* ─── TOPBAR AUTH ─── */
-  #topbar {
-    position: fixed; top: 0; right: 0; left: 0;
-    z-index: 200;
-    display: flex; justify-content: flex-end; align-items: center;
-    padding: 6px 16px; gap: 10px;
-    background-color: rgba(42, 37, 21, 0.88);
-    backdrop-filter: blur(4px);
-    border-bottom: 1px solid rgba(191,176,123,0.2);
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; }
+
+  .shell {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
   }
-  #topbar .user-info {
-    font-family: 'Cinzel', serif; font-size: 12px;
-    letter-spacing: 1px; color: var(--gold);
-    display: flex; align-items: center; gap: 8px;
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid rgba(191, 176, 123, 0.26);
+    background: rgba(42, 37, 21, 0.93);
+    backdrop-filter: blur(8px);
   }
-  #topbar .user-info .avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    background-color: var(--olive);
-    border: 1px solid var(--gold-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
+
+  .topbar-inner {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
   }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--gold-soft);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(191, 176, 123, 0.45);
+    border-radius: 8px;
+    background: rgba(88, 83, 58, 0.62);
+    color: var(--gold);
+    font-size: 15px;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .nav-link,
   .btn-topbar {
-    font-family: 'Cinzel', serif; font-size: 11px;
-    letter-spacing: 1px; padding: 5px 12px;
-    border-radius: 3px; cursor: pointer;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-family: Cinzel, Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .nav-link {
+    padding: 0 11px;
+    color: var(--gold);
+    border: 1px solid transparent;
+  }
+
+  .nav-link:hover {
+    border-color: rgba(191, 176, 123, 0.26);
+    background: rgba(191, 176, 123, 0.09);
+  }
+
+  #auth-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  #auth-area .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--gold);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  #auth-area .user-info span {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #auth-area .avatar {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(191, 176, 123, 0.4);
+    border-radius: 8px;
+    background: rgba(88, 83, 58, 0.7);
+    font-size: 13px;
+  }
+
+  .btn-topbar {
+    padding: 0 12px;
     border: 1px solid var(--gold-dark);
-    text-decoration: none; transition: background 0.2s;
-  }
-  .btn-login  { background: var(--olive); color: var(--gold); }
-  .btn-login:hover { background: #6e6849; }
-  .btn-logout { background: transparent; color: var(--gold-dark); }
-  .btn-logout:hover { background: rgba(191,176,123,0.1); }
-
-  /* ─── BANNER ─── */
-  .banner {
-    position: relative; width: 100%; min-height: 320px; height: clamp(320px, 46vh, 420px);
-    overflow: hidden; background-color: var(--olive);
-    margin-top: 37px;
-    flex: 0 0 auto;
-  }
-  .banner-bg {
-    position: absolute; inset: 0;
-    background-image: url('img/map 1.29.jpg');
-    background-size: cover; background-position: 67% 72%;
-    filter: brightness(0.45) saturate(0.8);
-  }
-  .banner::after {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 60%, transparent 30%, rgba(30,25,10,0.75) 100%);
-    pointer-events: none;
-  }
-  .banner-content {
-    position: relative; z-index: 2; height: 100%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px; text-align: center; padding: 20px;
-  }
-  .banner-ornament { color: var(--gold); font-size: 22px; letter-spacing: 12px; opacity: 0.8; }
-  .banner-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(36px, 6vw, 72px); font-weight: 700;
-    color: var(--gold-light);
-    text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(191,176,123,0.3);
-    letter-spacing: 4px; line-height: 1.1;
-  }
-  .banner-subtitle {
-    font-style: italic; font-size: clamp(14px, 2vw, 20px);
-    color: var(--parchment2); opacity: 0.85;
-    letter-spacing: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-  }
-  .banner-version {
-    font-family: 'Cinzel', serif; font-size: 13px;
-    color: var(--gold); letter-spacing: 6px; opacity: 0.7; margin-top: 4px;
+    cursor: pointer;
   }
 
-  /* ─── DIVIDER ─── */
-  .divider {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 40px; margin: 36px auto 0; max-width: 900px;
-  }
-  .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-dark), transparent); }
-  .divider-diamond { width: 10px; height: 10px; background: var(--gold-dark); transform: rotate(45deg); flex-shrink: 0; }
-
-  .section-title {
-    font-family: 'Cinzel', serif; font-size: 13px;
-    letter-spacing: 5px; text-transform: uppercase;
-    color: var(--gold-dark); text-align: center;
-    margin-top: 10px; opacity: 0.8;
+  .btn-login {
+    background: rgba(191, 176, 123, 0.14);
+    color: var(--gold-soft);
   }
 
-  /* ─── CARDS ─── */
-  .cards {
+  .btn-login:hover { background: rgba(191, 176, 123, 0.24); }
+
+  .btn-logout {
+    background: transparent;
+    color: var(--gold);
+  }
+
+  .btn-logout:hover { background: rgba(191, 176, 123, 0.09); }
+
+  main {
+    flex: 1;
+    padding: 34px 0 42px;
+  }
+
+  .home-panel {
+    min-height: 520px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 24px; max-width: 1000px;
-    margin: 36px auto 60px; padding: 0 32px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+    overflow: hidden;
+    border: 1px solid rgba(138, 122, 80, 0.32);
+    border-radius: 8px;
+    background: rgba(247, 241, 228, 0.92);
+    box-shadow: 0 22px 60px var(--shadow);
   }
-  .card {
-    position: relative; background-color: var(--parchment2);
-    border: 1px solid var(--gold-dark); border-radius: 4px;
-    padding: 28px 24px 24px;
-    text-decoration: none; color: inherit;
-    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
-    overflow: hidden; cursor: pointer;
+
+  .map-showcase {
+    position: relative;
+    min-height: 520px;
+    overflow: hidden;
+    background: var(--mud);
   }
-  .card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(191,176,123,0.12) 0%, transparent 60%);
+
+  .map-showcase img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: 54% 50%;
+    filter: saturate(0.9) contrast(0.95) brightness(0.76);
+  }
+
+  .map-showcase::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(30, 25, 10, 0.1), rgba(30, 25, 10, 0.58)),
+      linear-gradient(0deg, rgba(30, 25, 10, 0.36), transparent 48%);
     pointer-events: none;
   }
-  .card::after {
-    content: ''; position: absolute;
-    top: 6px; left: 6px; right: 6px; bottom: 6px;
-    border: 1px solid rgba(191,176,123,0.25); border-radius: 2px;
-    pointer-events: none;
+
+  .map-copy {
+    position: absolute;
+    left: 34px;
+    right: 34px;
+    bottom: 32px;
+    z-index: 2;
+    color: var(--paper-soft);
   }
-  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(58,53,32,0.28); border-color: var(--gold); }
-  .card-icon  { font-size: 36px; margin-bottom: 14px; display: block; }
-  .card-title { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700; color: var(--olive); margin-bottom: 8px; letter-spacing: 1px; }
-  .card-desc  { font-size: 14px; line-height: 1.6; color: var(--dark); opacity: 0.82; font-style: italic; }
-  .card-badge { display: inline-block; margin-top: 14px; padding: 3px 10px; background-color: var(--olive); color: var(--gold); font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 2px; border-radius: 2px; }
-  .card.soon  { opacity: 0.7; pointer-events: none; }
-  .card.soon .card-badge { background-color: transparent; border: 1px solid var(--gold-dark); color: var(--gold-dark); }
 
-  /* ─── LORE ─── */
-  .lore { max-width: 640px; margin: 0 auto 50px; padding: 0 32px; text-align: center; }
-  .lore-text { font-style: italic; font-size: 15px; line-height: 1.8; color: var(--olive); opacity: 0.85; padding: 0 20px; }
-  .lore-text::before, .lore-text::after { content: '❧'; color: var(--gold-dark); font-size: 22px; vertical-align: middle; margin: 0 8px; opacity: 0.7; }
+  .eyebrow {
+    color: var(--gold-soft);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
 
-  /* ─── FOOTER ─── */
+  .map-copy h1 {
+    max-width: 460px;
+    margin-top: 14px;
+    color: var(--paper-soft);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 48px;
+    line-height: 1.05;
+    letter-spacing: 2px;
+    text-wrap: balance;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.72);
+  }
+
+  .map-copy p {
+    max-width: 430px;
+    margin-top: 14px;
+    color: rgba(241, 231, 211, 0.88);
+    font-size: 17px;
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  .quick-dock {
+    position: absolute;
+    left: 34px;
+    bottom: 190px;
+    z-index: 3;
+    width: min(390px, calc(100% - 68px));
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid rgba(212, 196, 138, 0.28);
+    border-radius: 8px;
+    background: rgba(42, 37, 21, 0.72);
+    backdrop-filter: blur(5px);
+  }
+
+  .dock-item {
+    min-height: 58px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 6px;
+    color: var(--gold-soft);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: center;
+    transition: background 0.16s ease, transform 0.16s ease;
+  }
+
+  .dock-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dock-item:hover {
+    background: rgba(191, 176, 123, 0.16);
+    transform: translateY(-2px);
+  }
+
+  .dock-item strong {
+    display: block;
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .command-board {
+    min-width: 0;
+    padding: 44px 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+  }
+
+  .board-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .board-title {
+    color: var(--ink);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 35px;
+    line-height: 1.12;
+    letter-spacing: 1px;
+    text-wrap: balance;
+  }
+
+  .mood-token {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--gold-soft);
+    color: var(--mud);
+    border: 1px solid rgba(138, 122, 80, 0.24);
+    box-shadow: 0 6px 18px rgba(138, 122, 80, 0.18);
+    font-size: 18px;
+  }
+
+  .store-list {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid rgba(138, 122, 80, 0.22);
+    border-bottom: 1px solid rgba(138, 122, 80, 0.22);
+  }
+
+  .store-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 74px 42px;
+    align-items: center;
+    gap: 16px;
+    min-height: 72px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(138, 122, 80, 0.16);
+  }
+
+  .store-row:last-child { border-bottom: 0; }
+
+  .store-name {
+    min-width: 0;
+  }
+
+  .store-name strong {
+    display: block;
+    color: var(--mud);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .store-name span {
+    display: block;
+    margin-top: 4px;
+    color: rgba(58, 53, 32, 0.72);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .store-stat {
+    color: var(--gold-dark);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  .row-action {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(138, 122, 80, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.38);
+    color: var(--mud);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 18px;
+    transition: transform 0.16s ease, background 0.16s ease;
+  }
+
+  .row-action:hover {
+    background: var(--gold-soft);
+    transform: translateX(2px);
+  }
+
+  .primary-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .action-button {
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 8px;
+    font-family: Cinzel, Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  }
+
+  .action-button.primary {
+    background: var(--mud);
+    color: var(--gold-soft);
+    box-shadow: 0 12px 24px rgba(42, 37, 21, 0.18);
+  }
+
+  .action-button.secondary {
+    border: 1px solid rgba(138, 122, 80, 0.42);
+    background: rgba(255, 255, 255, 0.32);
+    color: var(--mud);
+  }
+
+  .action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px rgba(42, 37, 21, 0.16);
+  }
+
+  .rune-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+
+  .rune {
+    min-height: 118px;
+    padding: 18px;
+    border: 1px solid rgba(138, 122, 80, 0.28);
+    border-radius: 8px;
+    background: rgba(241, 231, 211, 0.58);
+  }
+
+  .rune b {
+    display: block;
+    color: var(--mud);
+    font-family: Cinzel, Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .rune p {
+    margin-top: 9px;
+    color: rgba(42, 37, 21, 0.75);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
   footer {
     margin-top: auto;
-    background-color: var(--olive); color: var(--gold); text-align: center;
-    padding: 18px 20px; font-family: 'Cinzel', serif; font-size: 11px;
-    letter-spacing: 3px; line-height: 1.7;
+    padding: 18px 20px;
+    background: var(--olive);
+    color: var(--gold);
+    text-align: center;
+    font-family: Cinzel, Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    line-height: 1.7;
   }
 
-  /* ─── ANIMATIONS ─── */
-  .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease forwards; }
-  .fade-in:nth-child(1) { animation-delay: 0.10s; }
-  .fade-in:nth-child(2) { animation-delay: 0.22s; }
-  .fade-in:nth-child(3) { animation-delay: 0.34s; }
-  .fade-in:nth-child(4) { animation-delay: 0.46s; }
-  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .fade-in { opacity: 1; transform: none; }
 
-  @media (max-width: 720px) {
-    #topbar {
+  @media (max-width: 980px) {
+    .shell { width: min(100% - 28px, 760px); }
+    .topbar-inner {
+      min-height: 66px;
+      flex-wrap: wrap;
       justify-content: center;
-      padding: 8px 12px;
-      min-height: 44px;
+      padding: 8px 0;
     }
-    #topbar .user-info { max-width: 60vw; }
-    #topbar .user-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .banner {
-      margin-top: 44px;
-      min-height: 280px;
-      height: 38vh;
+    .brand { width: 100%; justify-content: center; }
+    .nav { order: 3; width: 100%; overflow-x: auto; justify-content: flex-start; padding-bottom: 2px; }
+    #auth-area { margin-left: 0; }
+    main { padding-top: 22px; }
+    .home-panel { grid-template-columns: 1fr; }
+    .map-showcase { min-height: 420px; }
+    .command-board { padding: 34px 28px; }
+    .rune-strip { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 620px) {
+    .shell { width: calc(100% - 20px); }
+    .brand { font-size: 14px; letter-spacing: 1px; }
+    .nav-link { padding: 0 9px; }
+    #auth-area .user-info span { max-width: 110px; }
+    .home-panel { min-height: auto; }
+    .map-showcase { min-height: 360px; }
+    .map-copy {
+      left: 20px;
+      right: 20px;
+      bottom: 22px;
     }
-    .banner-content { padding: 18px 14px; }
-    .banner-ornament { font-size: 18px; letter-spacing: 8px; }
-    .banner-title { font-size: clamp(32px, 12vw, 48px); letter-spacing: 2px; }
-    .banner-subtitle { font-size: 15px; letter-spacing: 1px; }
-    .banner-version { font-size: 11px; letter-spacing: 4px; }
-    .divider { padding: 0 18px; margin-top: 26px; }
-    .section-title { padding: 0 18px; letter-spacing: 3px; }
-    .cards {
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin: 26px auto 38px;
-      padding: 0 16px;
+    .map-copy h1 {
+      font-size: 36px;
+      letter-spacing: 1px;
     }
-    .card { padding: 24px 18px 20px; }
-    .lore { margin-bottom: 34px; padding: 0 18px; }
-    .lore-text { padding: 0; }
-    footer { padding: 16px; font-size: 10px; letter-spacing: 2px; }
+    .map-copy p { font-size: 16px; }
+    .quick-dock {
+      left: 20px;
+      top: 22px;
+      bottom: auto;
+      width: calc(100% - 40px);
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .dock-item {
+      min-height: 52px;
+      padding: 0 6px;
+    }
+    .dock-item strong { font-size: 16px; }
+    .command-board {
+      padding: 28px 18px;
+      gap: 22px;
+    }
+    .board-heading { align-items: center; }
+    .board-title { font-size: 28px; }
+    .mood-token { width: 34px; height: 34px; }
+    .store-row {
+      grid-template-columns: minmax(0, 1fr) 40px;
+      gap: 12px;
+      min-height: 74px;
+    }
+    .store-stat { display: none; }
+    .primary-actions { grid-template-columns: 1fr; }
+    footer { font-size: 10px; letter-spacing: 2px; }
   }
 </style>
 </head>
 <body>
-
-<!-- ── TOPBAR ── -->
-<div id="topbar">
-  <div id="auth-area"></div>
-</div>
-
-<!-- ── BANNER ── -->
-<div class="banner">
-  <div class="banner-bg"></div>
-  <div class="banner-content">
-    <div class="banner-ornament">✦ ✦ ✦</div>
-    <h1 class="banner-title">Dofus Rétro</h1>
-    <p class="banner-subtitle">Encyclopédie du Monde des Douze</p>
-    <p class="banner-version">VERSION 1.29</p>
+<header class="topbar">
+  <div class="shell topbar-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">◆</span>
+      Dofus Retro
+    </a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a class="nav-link" href="maps.html">Mes cartes</a>
+      <a class="nav-link" href="community.html">Communauté</a>
+      <a class="nav-link" href="map-leaflet.html">Carte interactive</a>
+    </nav>
+    <div id="auth-area"></div>
   </div>
-</div>
+</header>
 
-<div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
-<p class="section-title">Outils &amp; Ressources</p>
+<main>
+  <section class="shell home-panel" aria-labelledby="home-title">
+    <div class="map-showcase">
+      <img src="img/map 1.29.jpg" alt="Carte du Monde des Douze">
+      <div class="quick-dock fade-in delay-1" aria-label="Accès rapides">
+        <a class="dock-item" href="maps.html"><strong>⌖</strong><span>Mes cartes</span></a>
+        <a class="dock-item" href="community.html"><strong>☷</strong><span>Communauté</span></a>
+        <a class="dock-item" href="map-leaflet.html"><strong>＋</strong><span>Carte</span></a>
+      </div>
+      <div class="map-copy fade-in">
+        <span class="eyebrow">Monde des Douze</span>
+        <h1 id="home-title">Préparez vos trajets sans perdre le nord.</h1>
+        <p>Repérez les zones, annotez les passages utiles et retrouvez vos cartes en quelques clics.</p>
+      </div>
+    </div>
 
-<div class="cards">
-  <a class="card available fade-in" href="maps.html">
-    <span class="card-icon">🗺️</span>
-    <div class="card-title">Mes Cartes Interactives</div>
-    <p class="card-desc">Créez et personnalisez vos propres cartes du Monde des Douze. Ajoutez des annotations, des icônes, et sauvegardez-les sur votre compte pour les retrouver à tout moment.</p>
-    <span class="card-badge">Disponible</span>
-  </a>
-  <a class="card available fade-in" href="community.html">
-    <span class="card-icon">🌍</span>
-    <div class="card-title">Cartes de la Communauté</div>
-    <p class="card-desc">Parcourez les cartes publiques partagées par les autres joueurs, avec leurs chemins, notes, ressources et repères.</p>
-    <span class="card-badge">Disponible</span>
-  </a>
-</div>
+    <div class="command-board">
+      <div class="board-heading fade-in delay-1">
+        <h2 class="board-title">Votre atelier de cartographie</h2>
+        <span class="mood-token" aria-hidden="true">☀</span>
+      </div>
 
-<div class="divider" style="margin-bottom:28px;"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
-<div class="lore">
-  <p class="lore-text">Au commencement était le Krosmos, et au commencement du Krosmos était Xelor, dieu du Temps…</p>
-</div>
+      <div class="store-list fade-in delay-2">
+        <a class="store-row" href="maps.html">
+          <span class="store-name">
+            <strong>Cartes sauvegardées</strong>
+            <span>Vos routes, repères et notes privées.</span>
+          </span>
+          <span class="store-stat">Compte</span>
+          <span class="row-action" aria-hidden="true">+</span>
+        </a>
+        <a class="store-row" href="community.html">
+          <span class="store-name">
+            <strong>Partages publics</strong>
+            <span>Les trouvailles des autres aventuriers.</span>
+          </span>
+          <span class="store-stat">Public</span>
+          <span class="row-action" aria-hidden="true">+</span>
+        </a>
+        <a class="store-row" href="map-leaflet.html">
+          <span class="store-name">
+            <strong>Carte libre</strong>
+            <span>Zoom fluide, grille précise, coordonnées au curseur.</span>
+          </span>
+          <span class="store-stat">Libre</span>
+          <span class="row-action" aria-hidden="true">+</span>
+        </a>
+      </div>
 
-<footer>Dofus Rétro 1.29 &nbsp;·&nbsp; Monde des Douze &nbsp;·&nbsp; Fan Site</footer>
+      <div class="primary-actions fade-in delay-3">
+        <a class="action-button primary" href="maps.html">Ouvrir mes cartes</a>
+        <a class="action-button secondary" href="community.html">Voir la communauté</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell rune-strip" aria-label="Repères">
+    <article class="rune fade-in delay-1">
+      <b>Annotations</b>
+      <p>Ajoutez des couleurs, icônes et notes sur les cases importantes.</p>
+    </article>
+    <article class="rune fade-in delay-2">
+      <b>Coordonnées</b>
+      <p>Survolez la grille pour lire la position exacte d’une case.</p>
+    </article>
+    <article class="rune fade-in delay-3">
+      <b>Partage</b>
+      <p>Publiez une carte utile et consultez celles déjà ouvertes.</p>
+    </article>
+  </section>
+</main>
+
+<footer>Dofus Retro 1.29 · Monde des Douze · Fan Site</footer>
 
 <script type="module">
   import './js/supabase-api.js';
@@ -275,6 +681,7 @@
     await window.DofusApi.logout();
     window.location.reload();
   }
+
   window.logout = logout;
 </script>
 </body>
