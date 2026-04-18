@@ -51,6 +51,16 @@
   .leaflet-grid-line {
     vector-effect: non-scaling-stroke;
   }
+  .leaflet-grid-overlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .leaflet-grid-overlay svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
   .topbar {
     position: fixed;
     z-index: 1000;
@@ -214,14 +224,18 @@
   const COLS = X_MAX - X_MIN + 1;
   const ROWS = Y_MAX - Y_MIN + 1;
   const PITCH_N = 39, PITCH_W = 40, ROW_PITCH = 23;
+  const IMAGE_WIDTH = 5359;
+  const IMAGE_HEIGHT = 3869;
 
   const colLeft = [0];
   for (let c = 1; c < COLS; c++) {
     colLeft[c] = colLeft[c - 1] + (c - 1 < 41 ? PITCH_N : PITCH_W);
   }
 
-  const MAP_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 37 : 38);
-  const MAP_HEIGHT = (ROWS - 1) * ROW_PITCH + 21;
+  const GRID_WIDTH = colLeft[COLS - 1] + (COLS - 1 < 41 ? 39 : 40);
+  const GRID_HEIGHT = ROWS * ROW_PITCH;
+  const MAP_WIDTH = IMAGE_WIDTH;
+  const MAP_HEIGHT = IMAGE_HEIGHT;
   const ZOOM_STEP = 0.25;
   const MIN_ZOOM = -2;
   const MAX_ZOOM = 3;
@@ -239,8 +253,9 @@
     const ri = y - Y_MIN;
     const left = colLeft[ci];
     const top = ri * ROW_PITCH;
-    const bottom = top + 21;
-    return [[-bottom, left], [-top, left + cellWidth(ci)]];
+    const right = Math.min(ci === COLS - 1 ? GRID_WIDTH : colLeft[ci + 1], MAP_WIDTH);
+    const bottom = Math.min(top + ROW_PITCH, MAP_HEIGHT);
+    return [[-bottom, left], [-top, right]];
   }
 
   function cellCenterByIndex(ci, ri) {
@@ -266,7 +281,7 @@
     while (lo <= hi) {
       const mid = Math.floor((lo + hi) / 2);
       const left = colLeft[mid];
-      const right = left + cellWidth(mid);
+      const right = Math.min(mid === COLS - 1 ? GRID_WIDTH : colLeft[mid + 1], MAP_WIDTH);
       if (px < left) hi = mid - 1;
       else if (px >= right) lo = mid + 1;
       else return { x: X_MIN + mid, y: Y_MIN + ri, ci: mid, ri };
@@ -278,15 +293,12 @@
     crs: L.CRS.Simple,
     zoomControl: false,
     attributionControl: false,
-    scrollWheelZoom: true,
+    scrollWheelZoom: false,
     zoomSnap: ZOOM_STEP,
     zoomDelta: ZOOM_STEP,
     minZoom: MIN_ZOOM,
     maxZoom: MAX_ZOOM,
-    maxBounds: bounds,
-    maxBoundsViscosity: 1,
-    wheelDebounceTime: 20,
-    wheelPxPerZoomLevel: 120
+    inertia: false
   });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -295,8 +307,6 @@
     interactive: false
   }).addTo(map);
 
-  const gridRenderer = L.svg({ padding: 0.5 });
-  const gridLayer = L.layerGroup().addTo(map);
   const selectionLayer = L.layerGroup().addTo(map);
   const hoverTooltip = L.tooltip({
     permanent: false,
@@ -305,31 +315,40 @@
     offset: [0, -6]
   });
 
-  function addGridLine(points) {
-    L.polyline(points, {
-      renderer: gridRenderer,
-      interactive: false,
-      className: 'leaflet-grid-line',
-      color: '#B8B18F',
-      weight: 1,
-      opacity: 0.75
-    }).addTo(gridLayer);
+  function addGridLine(lines, x1, y1, x2, y2) {
+    lines.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
   }
 
-  function buildGrid() {
+  const gridElement = L.DomUtil.create('div', 'leaflet-grid-overlay', map.getPanes().overlayPane);
+  gridElement.style.zIndex = 2;
+
+  function buildGridSvg() {
+    const lines = [];
     for (let ci = 0; ci < COLS; ci++) {
       const left = colLeft[ci];
-      addGridLine([[0, left], [-MAP_HEIGHT, left]]);
+      addGridLine(lines, left, 0, left, MAP_HEIGHT);
       if (ci === COLS - 1) {
-        const right = left + cellWidth(ci);
-        addGridLine([[0, right], [-MAP_HEIGHT, right]]);
+        const right = Math.min(GRID_WIDTH, MAP_WIDTH);
+        addGridLine(lines, right, 0, right, MAP_HEIGHT);
       }
     }
 
     for (let ri = 0; ri <= ROWS; ri++) {
-      const top = Math.min(ri * ROW_PITCH, MAP_HEIGHT);
-      addGridLine([[-top, 0], [-top, MAP_WIDTH]]);
+      const top = Math.min(ri * ROW_PITCH, GRID_HEIGHT, MAP_HEIGHT);
+      addGridLine(lines, 0, top, MAP_WIDTH, top);
+      if (top >= MAP_HEIGHT) break;
     }
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" preserveAspectRatio="none"><g stroke="#1F1A10" stroke-width="2" stroke-opacity="0.45" vector-effect="non-scaling-stroke">${lines.join('')}</g></svg>`;
+    return svg;
+  }
+
+  function syncGridOverlay() {
+    const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+    const se = map.latLngToLayerPoint(bounds.getSouthEast());
+    L.DomUtil.setPosition(gridElement, nw);
+    gridElement.style.width = `${Math.max(0, se.x - nw.x)}px`;
+    gridElement.style.height = `${Math.max(0, se.y - nw.y)}px`;
   }
 
   function selectCell(cell) {
@@ -352,9 +371,44 @@
     map.panTo(cellCenter(x, y), { animate: true });
   }
 
+  function clampPanToImage() {
+    const zoom = map.getZoom();
+    const size = map.getSize();
+    const half = size.divideBy(2);
+    const nw = map.project(bounds.getNorthWest(), zoom);
+    const se = map.project(bounds.getSouthEast(), zoom);
+    const center = map.project(map.getCenter(), zoom);
+    let x = center.x;
+    let y = center.y;
+
+    if (se.x - nw.x <= size.x) x = (nw.x + se.x) / 2;
+    else x = Math.max(nw.x + half.x, Math.min(se.x - half.x, x));
+
+    if (se.y - nw.y <= size.y) y = (nw.y + se.y) / 2;
+    else y = Math.max(nw.y + half.y, Math.min(se.y - half.y, y));
+
+    if (Math.abs(x - center.x) > 0.5 || Math.abs(y - center.y) > 0.5) {
+      map.panTo(map.unproject([x, y], zoom), { animate: false });
+    }
+  }
+
+  function zoomAtCursor(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, map.getZoom() + direction * ZOOM_STEP));
+    if (nextZoom === map.getZoom()) return;
+    map.setZoomAround(map.mouseEventToContainerPoint(event), nextZoom, { animate: false });
+  }
+
   map.setView(cellCenter(0, 0), 0, { animate: false });
-  map.setMaxBounds(bounds);
-  buildGrid();
+  gridElement.innerHTML = buildGridSvg();
+  syncGridOverlay();
+  clampPanToImage();
+
+  map.getContainer().addEventListener('wheel', zoomAtCursor, { passive: false });
+  map.on('drag dragend resize', clampPanToImage);
+  map.on('move zoom resize viewreset', syncGridOverlay);
 
   map.on('mousemove', e => {
     const cell = pointToCell(e.latlng);
