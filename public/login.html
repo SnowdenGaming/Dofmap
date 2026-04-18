@@ -2,359 +2,159 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dofus Retro — Connexion</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
-
-  :root {
-    --parchment:  #E8DBC8;
-    --parchment2: #D9C9AE;
-    --olive:      #58533A;
-    --gold:       #BFB07B;
-    --gold-light: #D4C48A;
-    --gold-dark:  #8A7A50;
-    --ink:        #2A2515;
-    --red:        #8E0000;
-    --green:      #2A5A2A;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    min-height: 100vh;
-    min-height: 100dvh;
-    background-color: var(--olive);
-    background-image: url('img/map 1.29.jpg');
-    background-size: cover;
-    background-position: 67% 72%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IM Fell English', Georgia, serif;
-    padding: 24px 16px;
-    overflow-x: hidden;
-  }
-
-  /* Overlay sombre */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(20, 16, 6, 0.72);
-  }
-
-  .card {
-    position: relative;
-    z-index: 1;
-    width: min(420px, 100%);
-    background-color: var(--parchment);
-    border: 1px solid var(--gold-dark);
-    border-radius: 4px;
-    padding: 0;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  }
-
-  /* Bande décorative haute */
-  .card-header {
-    background-color: var(--olive);
-    padding: 28px 32px 20px;
-    text-align: center;
-    border-bottom: 2px solid var(--gold-dark);
-  }
-  .card-header .ornament { color: var(--gold); font-size: 18px; letter-spacing: 10px; opacity: 0.7; }
-  .card-header h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 26px; font-weight: 700;
-    color: var(--gold-light);
-    letter-spacing: 3px;
-    margin: 8px 0 4px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  }
-  .card-header p {
-    font-style: italic;
-    color: var(--parchment2);
-    font-size: 13px;
-    opacity: 0.75;
-  }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    border-bottom: 2px solid var(--gold-dark);
-    background-color: var(--parchment2);
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 12px;
-    background: none;
-    border: none;
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    color: var(--gold-dark);
-    transition: background 0.2s, color 0.2s;
-  }
-  .tab-btn.active {
-    background-color: var(--parchment);
-    color: var(--olive);
-    font-weight: 700;
-    border-bottom: 2px solid var(--parchment);
-    margin-bottom: -2px;
-  }
-  .tab-btn:hover:not(.active) { background-color: rgba(191,176,123,0.15); }
-
-  /* Formulaires */
-  .tab-content { display: none; padding: 28px 32px 32px; }
-  .tab-content.active { display: block; }
-
-  .form-group { margin-bottom: 18px; }
-  .form-group label {
-    display: block;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--gold-dark);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-  .form-group input {
-    width: 100%;
-    padding: 10px 13px;
-    background-color: var(--parchment2);
-    border: 1px solid var(--gold-dark);
-    border-radius: 3px;
-    font-family: 'IM Fell English', Georgia, serif;
-    font-size: 15px;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .form-group input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(191,176,123,0.25);
-  }
-
-  .btn-submit {
-    width: 100%;
-    padding: 12px;
-    margin-top: 6px;
-    background-color: var(--olive);
-    color: var(--gold-light);
-    border: 1px solid var(--gold-dark);
-    border-radius: 3px;
-    font-family: 'Cinzel', serif;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn-submit:hover { background-color: #6e6849; }
-  .btn-submit:active { transform: scale(0.99); }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  /* Messages */
-  .msg {
-    display: none;
-    margin-top: 14px;
-    padding: 10px 13px;
-    border-radius: 3px;
-    font-size: 13px;
-    font-style: italic;
-  }
-  .msg.error { background-color: rgba(142,0,0,0.1); color: var(--red); border: 1px solid rgba(142,0,0,0.3); }
-  .msg.success { background-color: rgba(42,90,42,0.1); color: var(--green); border: 1px solid rgba(42,90,42,0.3); }
-
-  /* Lien retour */
-  .back-link {
-    display: block;
-    text-align: center;
-    margin-top: 20px;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--gold-dark);
-    text-decoration: none;
-    opacity: 0.7;
-  }
-  .back-link:hover { opacity: 1; }
-
-  /* Séparateur */
-  .divider-form {
-    display: flex; align-items: center; gap: 10px;
-    margin: 20px 0 16px;
-  }
-  .divider-form::before, .divider-form::after {
-    content: ''; flex: 1; height: 1px;
-    background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
-  }
-  .divider-form span {
-    font-family: 'Cinzel', serif; font-size: 10px;
-    letter-spacing: 2px; color: var(--gold-dark); opacity: 0.6;
-  }
-
-  @media (max-width: 520px) {
-    body {
-      align-items: flex-start;
-      padding: 14px 12px;
-    }
-    .card-header { padding: 22px 18px 18px; }
-    .card-header .ornament { letter-spacing: 7px; }
-    .card-header h1 { font-size: 22px; letter-spacing: 2px; }
-    .tabs { flex-direction: column; }
-    .tab-btn { padding: 11px 10px; font-size: 12px; letter-spacing: 1px; }
-    .tab-content { padding: 22px 18px 24px; }
-    .form-group { margin-bottom: 14px; }
-    .btn-submit { font-size: 12px; letter-spacing: 1px; }
-    .back-link { margin: 0 18px 20px; }
-  }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dofus Retro - Connexion</title>
 <link rel="stylesheet" href="css/theme.css">
 </head>
-<body>
+<body class="login-page">
+<main class="login-shell">
+  <section class="login-visual" aria-label="Dofus Retro">
+    <img src="img/map 1.29.jpg" alt="Carte du Monde des Douze">
+    <div class="login-copy">
+      <span class="app-eyebrow">Dofus Retro</span>
+      <h1>Retrouvez vos cartes avant de repartir en chasse.</h1>
+      <p>Connexion rapide, cartes sauvegardées et repères prêts pour votre prochaine session.</p>
+    </div>
+  </section>
 
-<div class="card">
-  <button id="theme-toggle" class="global-theme-toggle" type="button" data-theme-toggle="true" aria-label="Activer le mode nuit" style="display:inline-flex;align-items:center;justify-content:center;position:absolute;right:12px;top:12px;z-index:3;width:40px;height:36px;border-radius:8px;background:#D4C48A;color:#2A2515;border:1px solid #8A7A50;">☀</button>
-  <div class="card-header">
-    <div class="ornament">✦ ✦ ✦</div>
-    <h1>Dofus Retro</h1>
-    <p>Monde des Douze — Fan Site</p>
-  </div>
+  <section class="login-card" aria-label="Connexion">
+    <button id="theme-toggle" class="theme-toggle login-theme-toggle" type="button" data-theme-toggle="true" aria-label="Activer le mode nuit">☀</button>
+    <div class="login-header">
+      <span class="app-eyebrow">Compte</span>
+      <h2>Dofus Retro</h2>
+      <p>Monde des Douze · Fan Site</p>
+    </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('login')">CONNEXION</button>
-    <button class="tab-btn" onclick="switchTab('register')">CRÉER UN COMPTE</button>
-  </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')" type="button">Connexion</button>
+      <button class="tab-btn" onclick="switchTab('register')" type="button">Créer un compte</button>
+    </div>
 
-  <!-- Connexion -->
-  <div id="tab-login" class="tab-content active">
-    <div class="form-group">
-      <label>Adresse e-mail</label>
-      <input id="login-id" type="email" placeholder="votre@email.com" autocomplete="email">
+    <div id="tab-login" class="tab-content active">
+      <div class="form-group">
+        <label for="login-id">Adresse e-mail</label>
+        <input id="login-id" type="email" placeholder="votre@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="login-pw">Mot de passe</label>
+        <input id="login-pw" type="password" placeholder="Votre mot de passe" autocomplete="current-password">
+      </div>
+      <button class="btn-submit" id="btn-login" onclick="doLogin()" type="button">Se connecter</button>
+      <div class="msg" id="login-msg"></div>
     </div>
-    <div class="form-group">
-      <label>Mot de passe</label>
-      <input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="btn-submit" id="btn-login" onclick="doLogin()">SE CONNECTER</button>
-    <div class="msg" id="login-msg"></div>
-  </div>
 
-  <!-- Inscription -->
-  <div id="tab-register" class="tab-content">
-    <div class="form-group">
-      <label>Pseudo</label>
-      <input id="reg-username" type="text" placeholder="Votre pseudo (min. 3 caractères)" autocomplete="username">
+    <div id="tab-register" class="tab-content">
+      <div class="form-group">
+        <label for="reg-username">Pseudo</label>
+        <input id="reg-username" type="text" placeholder="Votre pseudo" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Adresse e-mail</label>
+        <input id="reg-email" type="email" placeholder="votre@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="reg-pw">Mot de passe</label>
+        <input id="reg-pw" type="password" placeholder="Minimum 6 caractères" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label for="reg-pw2">Confirmer le mot de passe</label>
+        <input id="reg-pw2" type="password" placeholder="Répétez votre mot de passe" autocomplete="new-password">
+      </div>
+      <button class="btn-submit" id="btn-register" onclick="doRegister()" type="button">Créer mon compte</button>
+      <div class="msg" id="register-msg"></div>
     </div>
-    <div class="form-group">
-      <label>Adresse e-mail</label>
-      <input id="reg-email" type="email" placeholder="votre@email.com" autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label>Mot de passe</label>
-      <input id="reg-pw" type="password" placeholder="Min. 6 caractères" autocomplete="new-password">
-    </div>
-    <div class="form-group">
-      <label>Confirmer le mot de passe</label>
-      <input id="reg-pw2" type="password" placeholder="Répétez votre mot de passe" autocomplete="new-password">
-    </div>
-    <button class="btn-submit" id="btn-register" onclick="doRegister()">CRÉER MON COMPTE</button>
-    <div class="msg" id="register-msg"></div>
-  </div>
 
-  <a href="index.html" class="back-link">← Retour à l'accueil</a>
-</div>
+    <a href="index.html" class="back-link">Retour à l'accueil</a>
+  </section>
+</main>
 
 <script src="js/theme-toggle.js" defer></script>
 <script type="module">
 import './js/supabase-api.js';
 
-  /* Redirige si déjà connecté */
-  window.DofusApi.currentUser().then(user => {
-    if (user) window.location.href = 'index.html';
-  });
+window.DofusApi.currentUser().then(user => {
+  if (user) window.location.href = 'index.html';
+});
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach((b, i) =>
-      b.classList.toggle('active', (i === 0) === (tab === 'login'))
-    );
-    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((button, index) =>
+    button.classList.toggle('active', (index === 0) === (tab === 'login'))
+  );
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+function showMsg(id, text, type) {
+  const element = document.getElementById(id);
+  element.textContent = text;
+  element.className = `msg ${type}`;
+  element.style.display = 'block';
+}
+
+async function doLogin() {
+  const btn = document.getElementById('btn-login');
+  const identifier = document.getElementById('login-id').value.trim();
+  const password = document.getElementById('login-pw').value;
+
+  if (!identifier || !password) return showMsg('login-msg', 'Remplissez tous les champs.', 'error');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+    return showMsg('login-msg', 'Connectez-vous avec votre adresse e-mail.', 'error');
   }
 
-  function showMsg(id, text, type) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.className = `msg ${type}`;
-    el.style.display = 'block';
+  btn.disabled = true;
+  btn.textContent = 'Connexion...';
+
+  const data = await window.DofusApi.login(identifier, password);
+
+  if (data.ok) {
+    showMsg('login-msg', `Bienvenue, ${data.username} !`, 'success');
+    setTimeout(() => window.location.href = 'index.html', 800);
+  } else {
+    showMsg('login-msg', data.error, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
   }
+}
 
-  async function doLogin() {
-    const btn        = document.getElementById('btn-login');
-    const identifier = document.getElementById('login-id').value.trim();
-    const password   = document.getElementById('login-pw').value;
+async function doRegister() {
+  const btn = document.getElementById('btn-register');
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-pw').value;
+  const password2 = document.getElementById('reg-pw2').value;
 
-    if (!identifier || !password) return showMsg('login-msg', 'Remplissez tous les champs.', 'error');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-      return showMsg('login-msg', 'Connectez-vous avec votre adresse e-mail.', 'error');
-    }
+  if (password !== password2) return showMsg('register-msg', 'Les mots de passe ne correspondent pas.', 'error');
 
-    btn.disabled = true;
-    btn.textContent = 'Connexion…';
+  btn.disabled = true;
+  btn.textContent = 'Création...';
 
-    const data = await window.DofusApi.login(identifier, password);
+  const data = await window.DofusApi.register(username, email, password);
 
-    if (data.ok) {
-      showMsg('login-msg', `Bienvenue, ${data.username} !`, 'success');
-      setTimeout(() => window.location.href = 'index.html', 800);
-    } else {
-      showMsg('login-msg', data.error, 'error');
+  if (data.ok) {
+    if (data.needsEmailConfirmation) {
+      showMsg('register-msg', data.message || 'Compte créé. Vérifiez votre e-mail avant de vous connecter.', 'success');
       btn.disabled = false;
-      btn.textContent = 'SE CONNECTER';
+      btn.textContent = 'Créer mon compte';
+      return;
     }
+    showMsg('register-msg', `Compte créé ! Bienvenue, ${data.username} !`, 'success');
+    setTimeout(() => window.location.href = 'index.html', 900);
+  } else {
+    showMsg('register-msg', data.error, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Créer mon compte';
   }
+}
 
-  async function doRegister() {
-    const btn      = document.getElementById('btn-register');
-    const username = document.getElementById('reg-username').value.trim();
-    const email    = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-pw').value;
-    const password2 = document.getElementById('reg-pw2').value;
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Enter') return;
+  const loginActive = document.getElementById('tab-login').classList.contains('active');
+  if (loginActive) doLogin(); else doRegister();
+});
 
-    if (password !== password2) return showMsg('register-msg', 'Les mots de passe ne correspondent pas.', 'error');
-
-    btn.disabled = true;
-    btn.textContent = 'Création…';
-
-    const data = await window.DofusApi.register(username, email, password);
-
-    if (data.ok) {
-      if (data.needsEmailConfirmation) {
-        showMsg('register-msg', data.message || 'Compte créé. Vérifiez votre e-mail avant de vous connecter.', 'success');
-        btn.disabled = false;
-        btn.textContent = 'CRÉER MON COMPTE';
-        return;
-      }
-      showMsg('register-msg', `Compte créé ! Bienvenue, ${data.username} !`, 'success');
-      setTimeout(() => window.location.href = 'index.html', 900);
-    } else {
-      showMsg('register-msg', data.error, 'error');
-      btn.disabled = false;
-      btn.textContent = 'CRÉER MON COMPTE';
-    }
-  }
-
-  /* Soumettre avec Entrée */
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    const loginActive = document.getElementById('tab-login').classList.contains('active');
-    if (loginActive) doLogin(); else doRegister();
-  });
-  window.switchTab = switchTab;
-  window.doLogin = doLogin;
-  window.doRegister = doRegister;
+window.switchTab = switchTab;
+window.doLogin = doLogin;
+window.doRegister = doRegister;
 </script>
 </body>
 </html>
