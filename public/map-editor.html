@@ -441,7 +441,7 @@
 <body>
 <div id="topbar">
   <div class="topbar-left">
-    <a href="maps.html" class="back-link">← Mes cartes</a>
+<a href="/maps" class="back-link">← Mes cartes</a>
     <input id="map-title-input" type="text" value="Chargement..." maxlength="60" title="Cliquer pour renommer">
   </div>
   <div class="topbar-center">
@@ -1227,14 +1227,14 @@ function initEvents() {
 
 async function loadMap() {
   if (!mapId) {
-    window.location.href = 'maps.html';
+window.location.href = '/maps';
     return;
   }
 
   currentUser = await window.DofusApi.currentUser();
   mapData = await window.DofusApi.getMap(mapId).catch(() => null);
   if (!mapData) {
-    window.location.href = currentUser ? 'maps.html' : 'community.html';
+window.location.href = currentUser ? '/maps' : '/community';
     return;
   }
 
@@ -1242,7 +1242,7 @@ async function loadMap() {
   document.getElementById('map-title-input').value = mapData.name;
   document.getElementById('map-public-toggle').checked = !!mapData.isPublic;
   document.title = `${mapData.name} - Dofus Retro`;
-  document.querySelector('.back-link').href = mapData.readonly ? 'community.html' : 'maps.html';
+document.querySelector('.back-link').href = mapData.readonly ? '/community' : '/maps';
   document.querySelector('.back-link').textContent = mapData.readonly ? '← Communauté' : '← Mes cartes';
   applyReadonlyMode();
   applyAllCells();
