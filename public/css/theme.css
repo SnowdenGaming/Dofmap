@@ -17,6 +17,8 @@
   --ui-red: #8E0000;
   --ui-green: #2A7A2A;
   --ui-shadow: rgba(42, 37, 21, 0.2);
+  --ui-topbar-height: 58px;
+  --ui-radius: 8px;
 }
 
 body.night {
@@ -42,6 +44,7 @@ body {
   background-color: var(--ui-paper) !important;
   color: var(--ui-ink) !important;
   font-family: Lato, Arial, sans-serif !important;
+  font-size: 16px;
   transition: background-color 0.18s ease, color 0.18s ease;
 }
 
@@ -94,6 +97,14 @@ button,
   border-bottom: 1px solid var(--ui-topbar-border) !important;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
   color: var(--ui-gold-soft) !important;
+  min-height: var(--ui-topbar-height) !important;
+  height: auto !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+.topbar-inner {
+  min-height: 44px !important;
 }
 
 .topbar-logo,
@@ -106,6 +117,32 @@ button,
 #coords-bar {
   color: var(--ui-gold-soft) !important;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.34);
+}
+
+.topbar-logo,
+.brand {
+  font-size: 17px !important;
+  letter-spacing: 2px !important;
+}
+
+.topbar-page,
+.topbar-link,
+.nav-link,
+.btn-topbar,
+.btn-sm,
+.user-chip,
+#auth-area .user-info {
+  font-size: 13px !important;
+  letter-spacing: 1.1px !important;
+}
+
+.topbar-link,
+.nav-link,
+.btn-topbar,
+.btn-sm {
+  min-height: 36px !important;
+  padding: 7px 12px !important;
+  border-radius: var(--ui-radius) !important;
 }
 
 .topbar-link:hover,
@@ -121,8 +158,8 @@ button,
 
 .theme-toggle,
 .global-theme-toggle {
-  width: 40px;
-  height: 36px;
+  width: 44px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -155,6 +192,18 @@ button,
   background: var(--ui-panel) !important;
   color: var(--ui-ink) !important;
   border-bottom: 1px solid rgba(138, 122, 80, 0.28) !important;
+  padding-top: 58px !important;
+  padding-bottom: 40px !important;
+}
+
+.page-header h1 {
+  font-size: 32px !important;
+  line-height: 1.12 !important;
+}
+
+.page-header p {
+  font-size: 16px !important;
+  line-height: 1.55 !important;
 }
 
 .page-header h1,
@@ -187,6 +236,27 @@ button,
   border-color: rgba(138, 122, 80, 0.34) !important;
   color: var(--ui-ink) !important;
   box-shadow: 0 18px 46px var(--ui-shadow);
+  border-radius: var(--ui-radius) !important;
+}
+
+.maps-grid {
+  gap: 24px !important;
+}
+
+.map-card-body {
+  padding: 16px 16px 12px !important;
+}
+
+.map-card-name {
+  font-size: 16px !important;
+}
+
+.map-card-meta,
+.card-desc,
+.store-name span,
+.rune p {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
 }
 
 .map-card-body,
@@ -212,6 +282,9 @@ body.night .leaflet-image-layer {
   background: var(--ui-olive) !important;
   color: var(--ui-gold-soft) !important;
   border-color: var(--ui-gold-dark) !important;
+  min-height: 44px !important;
+  border-radius: var(--ui-radius) !important;
+  font-size: 13px !important;
 }
 
 .btn-leaflet,
@@ -222,6 +295,7 @@ body.night .leaflet-image-layer {
 .back-link {
   color: var(--ui-gold-dark) !important;
   border-color: var(--ui-gold-dark) !important;
+  border-radius: var(--ui-radius) !important;
 }
 
 body.night .btn-leaflet,
@@ -248,11 +322,82 @@ body.night textarea {
 footer {
   background: var(--ui-olive) !important;
   color: var(--ui-gold-soft) !important;
+  font-size: 12px !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+}
+
+body:has(#toolbar):has(#leaflet-map) #toolbar {
+  top: var(--ui-topbar-height) !important;
+}
+
+body:has(#toolbar):has(#leaflet-map) #viewport {
+  top: var(--ui-topbar-height) !important;
+}
+
+body:has(#toolbar):has(#leaflet-map) .zoom-btn {
+  min-height: 30px !important;
+  font-size: 12px !important;
 }
 
 @media (max-width: 760px) {
+  :root {
+    --ui-topbar-height: 68px;
+  }
+
+  #topbar,
+  .topbar {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .topbar-logo,
+  .brand {
+    font-size: 16px !important;
+  }
+
+  .topbar-page,
+  .topbar-link,
+  .nav-link,
+  .btn-topbar,
+  .btn-sm,
+  .user-chip,
+  #auth-area .user-info {
+    font-size: 12px !important;
+  }
+
+  .page-header {
+    padding: 34px 18px 28px !important;
+  }
+
+  .page-header h1 {
+    font-size: 26px !important;
+  }
+
   .global-theme-toggle.is-floating {
     top: 10px;
     right: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  body:has(#toolbar):has(#leaflet-map) #topbar {
+    min-height: 96px !important;
+  }
+
+  body:has(#toolbar):has(#leaflet-map) #toolbar,
+  body:has(#toolbar):has(#leaflet-map) #viewport {
+    top: 96px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body:has(#toolbar):has(#leaflet-map) #topbar {
+    min-height: 128px !important;
+  }
+
+  body:has(#toolbar):has(#leaflet-map) #toolbar,
+  body:has(#toolbar):has(#leaflet-map) #viewport {
+    top: 128px !important;
   }
 }
