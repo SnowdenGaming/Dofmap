@@ -10,14 +10,12 @@
 <header class="topbar">
   <div class="app-shell app-topbar-inner">
     <a class="app-brand" href="index.html">
-      <span class="app-brand-mark">D</span>
       <span>Dofus Retro</span>
     </a>
     <nav class="app-nav" aria-label="Navigation principale">
       <a class="app-nav-link" href="index.html">Accueil</a>
       <a class="app-nav-link is-active" href="maps.html">Mes cartes</a>
       <a class="app-nav-link" href="community.html">Communauté</a>
-      <a class="app-nav-link" href="map-leaflet.html">Carte interactive</a>
     </nav>
     <div class="app-topbar-actions" id="auth-area"></div>
   </div>
@@ -32,7 +30,6 @@
     </div>
     <div class="app-heading-actions">
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activer le mode nuit">☀</button>
-      <a class="app-button secondary" href="map-leaflet.html">Carte interactive</a>
       <button class="app-button primary" id="btn-new-map" type="button">Nouvelle carte</button>
     </div>
   </section>
@@ -197,7 +194,7 @@ async function toggleVisibility(id, isPublic, event) {
   }
 
   authArea.innerHTML = `
-    <div class="user-chip"><div class="avatar">D</div><span>${currentUser.username}</span></div>
+    <div class="user-chip"><span class="user-chip-label">Compte</span><strong>${currentUser.username}</strong></div>
     <button class="btn-topbar btn-logout" onclick="logout()" type="button">Déconnexion</button>`;
 
   document.getElementById('maps-tools').style.display = 'flex';
