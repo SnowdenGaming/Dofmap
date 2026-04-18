@@ -1,226 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Dofus Rétro 1.29 — Accueil</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
-
-  :root {
-    --parchment:   #E8DBC8;
-    --parchment2:  #D9C9AE;
-    --dark:        #3A3520;
-    --olive:       #58533A;
-    --gold:        #BFB07B;
-    --gold-light:  #D4C48A;
-    --gold-dark:   #8A7A50;
-    --ink:         #2A2515;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background-color: var(--parchment);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    color: var(--ink);
-    font-family: 'IM Fell English', Georgia, serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ─── BANNER ─── */
-  .banner {
-    position: relative;
-    width: 100%; height: 420px;
-    overflow: hidden;
-    background-color: var(--olive);
-  }
-  .banner-bg {
-    position: absolute; inset: 0;
-    background-image: url('img/map 1.29.jpg');
-    background-size: cover;
-    background-position: 67% 72%;
-    filter: brightness(0.45) saturate(0.8);
-  }
-  .banner::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 60%, transparent 30%, rgba(30,25,10,0.75) 100%);
-    pointer-events: none;
-  }
-  .banner-content {
-    position: relative; z-index: 2;
-    height: 100%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px; text-align: center; padding: 20px;
-  }
-  .banner-ornament { color: var(--gold); font-size: 22px; letter-spacing: 12px; opacity: 0.8; }
-  .banner-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(36px, 6vw, 72px); font-weight: 700;
-    color: var(--gold-light);
-    text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(191,176,123,0.3);
-    letter-spacing: 4px; line-height: 1.1;
-  }
-  .banner-subtitle {
-    font-style: italic;
-    font-size: clamp(14px, 2vw, 20px);
-    color: var(--parchment2); opacity: 0.85;
-    letter-spacing: 2px;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-  }
-  .banner-version {
-    font-family: 'Cinzel', serif; font-size: 13px;
-    color: var(--gold); letter-spacing: 6px; opacity: 0.7; margin-top: 4px;
-  }
-
-  /* ─── DIVIDER ─── */
-  .divider {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 40px; margin: 36px auto 0; max-width: 900px;
-  }
-  .divider-line {
-    flex: 1; height: 1px;
-    background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
-  }
-  .divider-diamond {
-    width: 10px; height: 10px;
-    background: var(--gold-dark); transform: rotate(45deg); flex-shrink: 0;
-  }
-
-  .section-title {
-    font-family: 'Cinzel', serif; font-size: 13px;
-    letter-spacing: 5px; text-transform: uppercase;
-    color: var(--gold-dark); text-align: center;
-    margin-top: 10px; opacity: 0.8;
-  }
-
-  /* ─── CARDS ─── */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 24px; max-width: 1000px;
-    margin: 36px auto 60px; padding: 0 32px;
-  }
-  .card {
-    position: relative;
-    background-color: var(--parchment2);
-    border: 1px solid var(--gold-dark); border-radius: 4px;
-    padding: 28px 24px 24px;
-    text-decoration: none; color: inherit;
-    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
-    overflow: hidden; cursor: pointer;
-  }
-  .card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(191,176,123,0.12) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .card::after {
-    content: ''; position: absolute;
-    top: 6px; left: 6px; right: 6px; bottom: 6px;
-    border: 1px solid rgba(191,176,123,0.25); border-radius: 2px;
-    pointer-events: none;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 28px rgba(58,53,32,0.28);
-    border-color: var(--gold);
-  }
-  .card-icon { font-size: 36px; margin-bottom: 14px; display: block; }
-  .card-title {
-    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700;
-    color: var(--olive); margin-bottom: 8px; letter-spacing: 1px;
-  }
-  .card-desc { font-size: 14px; line-height: 1.6; color: var(--dark); opacity: 0.82; font-style: italic; }
-  .card-badge {
-    display: inline-block; margin-top: 14px;
-    padding: 3px 10px; background-color: var(--olive);
-    color: var(--gold); font-family: 'Cinzel', serif;
-    font-size: 10px; letter-spacing: 2px; border-radius: 2px;
-  }
-  .card.soon { opacity: 0.7; pointer-events: none; }
-  .card.soon .card-badge {
-    background-color: transparent;
-    border: 1px solid var(--gold-dark); color: var(--gold-dark);
-  }
-
-  /* ─── LORE ─── */
-  .lore { max-width: 640px; margin: 0 auto 50px; padding: 0 32px; text-align: center; }
-  .lore-text {
-    font-style: italic; font-size: 15px; line-height: 1.8;
-    color: var(--olive); opacity: 0.85; padding: 0 20px;
-  }
-  .lore-text::before, .lore-text::after {
-    content: '❧'; color: var(--gold-dark);
-    font-size: 22px; vertical-align: middle; margin: 0 8px; opacity: 0.7;
-  }
-
-  /* ─── FOOTER ─── */
-  footer {
-    background-color: var(--olive); color: var(--gold);
-    text-align: center; padding: 18px 20px;
-    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px;
-  }
-
-  /* ─── ANIMATIONS ─── */
-  .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease forwards; }
-  .fade-in:nth-child(1) { animation-delay: 0.10s; }
-  .fade-in:nth-child(2) { animation-delay: 0.22s; }
-  .fade-in:nth-child(3) { animation-delay: 0.34s; }
-  .fade-in:nth-child(4) { animation-delay: 0.46s; }
-  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-</style>
-</head>
-<body>
-
-<div class="banner">
-  <div class="banner-bg"></div>
-  <div class="banner-content">
-    <div class="banner-ornament">✦ ✦ ✦</div>
-    <h1 class="banner-title">Dofus Rétro</h1>
-    <p class="banner-subtitle">Encyclopédie du Monde des Douze</p>
-    <p class="banner-version">VERSION 1.29</p>
-  </div>
-</div>
-
-<div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
-<p class="section-title">Outils &amp; Ressources</p>
-
-<div class="cards">
-  <a class="card available fade-in" href="map_interactive.html">
-    <span class="card-icon">🗺️</span>
-    <div class="card-title">Carte Interactive</div>
-    <p class="card-desc">Naviguez sur la carte complète du Monde des Douze. Survolez chaque case pour afficher ses coordonnées et naviguez librement à travers toutes les zones.</p>
-    <span class="card-badge">Disponible</span>
-  </a>
-  <div class="card soon fade-in">
-    <span class="card-icon">⚔️</span>
-    <div class="card-title">Bestiaire</div>
-    <p class="card-desc">Consultez les fiches de tous les monstres — zones de spawn, niveaux, taux de drop et butins.</p>
-    <span class="card-badge">Bientôt</span>
-  </div>
-  <div class="card soon fade-in">
-    <span class="card-icon">🌿</span>
-    <div class="card-title">Ressources</div>
-    <p class="card-desc">Localisez les ressources de récolte sur la carte — minerais, plantes, bois, poissons et céréales.</p>
-    <span class="card-badge">Bientôt</span>
-  </div>
-  <div class="card soon fade-in">
-    <span class="card-icon">🏆</span>
-    <div class="card-title">Donjons</div>
-    <p class="card-desc">Guides des donjons du jeu — conditions d'entrée, archmonstres et récompenses.</p>
-    <span class="card-badge">Bientôt</span>
-  </div>
-</div>
-
-<div class="divider" style="margin-bottom:28px;"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
-<div class="lore">
-  <p class="lore-text">Au commencement était le Krosmos, et au commencement du Krosmos était Xelor, dieu du Temps…</p>
-</div>
-
-<footer>Dofus Rétro 1.29 &nbsp;·&nbsp; Monde des Douze &nbsp;·&nbsp; Fan Site</footer>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dofus Retro</title>
+    <meta
+      name="description"
+      content="Cartes, reperes et annotations Dofus Retro dans une interface rapide et fluide."
+    />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('dofmap-theme') === 'night') {
+            document.documentElement.classList.add('night-preload');
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

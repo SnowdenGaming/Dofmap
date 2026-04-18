@@ -1,14 +1,17 @@
 # Dofus Retro Site
 
-Base statique pour un fan site Dofus Retro 1.29.
+Base React + Vite pour un fan site Dofus Retro 1.29.
 
 ## Architecture
 
-- `public/` contient tout le site servi en production.
-- `public/js/supabase-api.js` centralise l'acces a Supabase Auth et a la table `maps`.
+- `src/` contient la SPA React :
+  - `pages/` pour les ecrans accueil, cartes, communaute et connexion ;
+  - `components/` pour le shell, les cartes et les modales ;
+  - `providers/` pour le theme et l'etat d'authentification ;
+  - `lib/dofus-api.js` pour l'acces a Supabase.
+- `public/` garde les assets statiques et `map-editor.html`, conserve en page dediee pour l'editeur.
 - Supabase gere l'authentification, la base Postgres et les regles de securite RLS.
-- Aucun serveur Express n'est necessaire pour mettre le site en ligne.
-- `vercel.json` force le preset Vercel sur `Other` pour eviter la detection Node.
+- Vercel construit maintenant le projet via Vite et publie `dist/`.
 
 ## Developpement local
 
@@ -17,8 +20,19 @@ npm install
 npm run dev
 ```
 
-Le serveur local sert le dossier `public/`.
-Le script `npm run build` ne transforme rien : il permet seulement a Vercel de traiter le projet comme un site statique et de publier `public/`.
+Par defaut, Vite expose l'application sur `http://localhost:5173`.
+
+Build de production :
+
+```bash
+npm run build
+```
+
+Preview local du build :
+
+```bash
+npm run preview
+```
 
 ## Initialiser Supabase
 
@@ -36,11 +50,10 @@ Le script cree la table `public.maps`, les index et les politiques RLS :
 
 ## Mise en ligne
 
-Option simple :
-
 1. Pousser le projet sur GitHub.
-2. Creer un projet Vercel, Netlify ou Cloudflare Pages.
-3. Configurer le dossier de publication sur `public`.
+2. Creer un projet Vercel.
+3. Laisser Vercel utiliser `npm run build` et publier `dist`.
 4. Ajouter l'URL publique du site dans Supabase Auth, section URL configuration.
 
-Le site utilise la cle publishable Supabase cote navigateur. C'est normal pour ce type d'architecture ; la securite des donnees vient des politiques RLS.
+Les routes `/`, `/maps`, `/community` et `/login` passent maintenant par la SPA React.
+L'editeur reste disponible directement via `/map-editor.html`.
