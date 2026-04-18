@@ -131,38 +131,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .search {
-    position: fixed;
-    z-index: 1000;
-    left: 12px;
-    bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px;
-    border-radius: 4px;
-    background: rgba(42, 37, 21, 0.92);
-    border: 1px solid rgba(191, 176, 123, 0.32);
-  }
-  .search label {
-    font: 12px Consolas, monospace;
-    color: #BFB07B;
-  }
-  .search input {
-    width: 54px;
-    height: 26px;
-    border: 1px solid #8A7A50;
-    border-radius: 3px;
-    background: #D9C9AE;
-    color: #2A2515;
-    text-align: center;
-  }
   .leaflet-tooltip.cell-tooltip {
-    padding: 4px 8px;
-    border: 0;
+    padding: 5px 8px;
+    border: 1px solid rgba(245, 229, 184, 0.35);
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.78);
-    color: #fff;
+    background: rgba(28, 23, 13, 0.86);
+    color: #F5E5B8;
     box-shadow: none;
     font: 12px Consolas, monospace;
   }
@@ -178,13 +152,6 @@
     }
     .title {
       max-width: 54vw;
-    }
-    .search {
-      left: 8px;
-      right: 8px;
-      bottom: 50px;
-      justify-content: center;
-      flex-wrap: wrap;
     }
     .coords {
       bottom: 8px;
@@ -203,14 +170,6 @@
   <div class="topbar-right">
     <button class="btn" id="home-btn" type="button">[0, 0]</button>
   </div>
-</div>
-
-<div class="search">
-  <label for="sx">X</label>
-  <input id="sx" type="number" value="0" min="-91" max="43">
-  <label for="sy">Y</label>
-  <input id="sy" type="number" value="0" min="-120" max="48">
-  <button class="btn" id="go-btn" type="button">Aller</button>
 </div>
 
 <div class="coords" id="coords">Survolez une case</div>
@@ -299,9 +258,18 @@
     zoomDelta: ZOOM_STEP,
     minZoom: ABSOLUTE_MIN_ZOOM,
     maxZoom: MAX_ZOOM,
+    doubleClickZoom: false,
     inertia: false
   });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  map.createPane('hoverPane');
+  map.getPane('hoverPane').style.zIndex = 620;
+  map.getPane('hoverPane').style.pointerEvents = 'none';
+
+  map.createPane('selectionPane');
+  map.getPane('selectionPane').style.zIndex = 610;
+  map.getPane('selectionPane').style.pointerEvents = 'none';
 
   L.imageOverlay('img/map 1.29.jpg', bounds, {
     alt: 'Carte Dofus Retro 1.29',
@@ -312,9 +280,9 @@
   const hoverLayer = L.layerGroup().addTo(map);
   const hoverTooltip = L.tooltip({
     permanent: false,
-    direction: 'top',
+    direction: 'right',
     className: 'cell-tooltip',
-    offset: [0, -6]
+    offset: [12, 0]
   });
 
   function addGridLine(lines, x1, y1, x2, y2) {
@@ -357,6 +325,7 @@
     selectedKey = `${cell.x},${cell.y}`;
     selectionLayer.clearLayers();
     L.rectangle(cellBounds(cell.x, cell.y), {
+      pane: 'selectionPane',
       interactive: false,
       color: '#ffffff',
       weight: 2,
@@ -432,11 +401,13 @@
     hoveredKey = key;
     hoverLayer.clearLayers();
     L.rectangle(cellBounds(cell.x, cell.y), {
+      pane: 'hoverPane',
       interactive: false,
-      color: '#F5E5B8',
+      color: '#FFF0BF',
       weight: 2,
-      fillColor: '#F5E5B8',
-      fillOpacity: 0.28
+      opacity: 0.95,
+      fillColor: '#FFE48A',
+      fillOpacity: 0.48
     }).addTo(hoverLayer);
   }
 
@@ -482,16 +453,6 @@
   });
 
   document.getElementById('home-btn').addEventListener('click', () => centerOn(0, 0));
-  document.getElementById('go-btn').addEventListener('click', () => {
-    const x = parseInt(document.getElementById('sx').value, 10);
-    const y = parseInt(document.getElementById('sy').value, 10);
-    if (!Number.isNaN(x) && !Number.isNaN(y)) centerOn(x, y);
-  });
-  ['sx', 'sy'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('go-btn').click();
-    });
-  });
 })();
 </script>
 </body>
