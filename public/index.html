@@ -553,6 +553,7 @@
     footer { font-size: 10px; letter-spacing: 2px; }
   }
 </style>
+<link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <header class="topbar">
@@ -639,27 +640,11 @@
 
 <footer>Dofus Retro 1.29 · Monde des Douze · Fan Site</footer>
 
+<script src="js/theme-toggle.js" defer></script>
 <script type="module">
   import './js/supabase-api.js';
 
   const authArea = document.getElementById('auth-area');
-  const themeToggle = document.getElementById('theme-toggle');
-
-  function applyTheme(theme) {
-    const isNight = theme === 'night';
-    document.body.classList.toggle('night', isNight);
-    themeToggle.textContent = isNight ? '☾' : '☀';
-    themeToggle.setAttribute('aria-label', isNight ? 'Activer le mode jour' : 'Activer le mode nuit');
-  }
-
-  const storedTheme = localStorage.getItem('dofmap-theme') || 'day';
-  applyTheme(storedTheme);
-
-  themeToggle.addEventListener('click', () => {
-    const nextTheme = document.body.classList.contains('night') ? 'day' : 'night';
-    localStorage.setItem('dofmap-theme', nextTheme);
-    applyTheme(nextTheme);
-  });
 
   window.DofusApi.currentUser().then(user => {
     if (user) {

@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700;900&display=swap');
+
+:root {
+  --ui-paper: #E8DBC8;
+  --ui-paper-soft: #F1E7D3;
+  --ui-paper-deep: #D6C3A4;
+  --ui-ink: #272214;
+  --ui-muted: rgba(58, 53, 32, 0.72);
+  --ui-panel: rgba(247, 241, 228, 0.92);
+  --ui-panel-strong: #D9C9AE;
+  --ui-topbar: rgba(42, 37, 21, 0.97);
+  --ui-topbar-border: rgba(212, 196, 138, 0.36);
+  --ui-olive: #58533A;
+  --ui-gold: #BFB07B;
+  --ui-gold-soft: #D4C48A;
+  --ui-gold-dark: #8A7A50;
+  --ui-red: #8E0000;
+  --ui-green: #2A7A2A;
+  --ui-shadow: rgba(42, 37, 21, 0.2);
+}
+
+body.night {
+  --ui-paper: #151715;
+  --ui-paper-soft: #242618;
+  --ui-paper-deep: #303222;
+  --ui-ink: #F1E7D3;
+  --ui-muted: rgba(241, 231, 211, 0.72);
+  --ui-panel: rgba(29, 30, 20, 0.94);
+  --ui-panel-strong: #2F341F;
+  --ui-topbar: rgba(18, 19, 12, 0.98);
+  --ui-topbar-border: rgba(240, 217, 141, 0.32);
+  --ui-olive: #2F341F;
+  --ui-gold: #D0BE78;
+  --ui-gold-soft: #F0D98D;
+  --ui-gold-dark: #A79455;
+  --ui-red: #E08272;
+  --ui-green: #76C576;
+  --ui-shadow: rgba(0, 0, 0, 0.34);
+}
+
+body {
+  background-color: var(--ui-paper) !important;
+  color: var(--ui-ink) !important;
+  font-family: Lato, Arial, sans-serif !important;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+body.night {
+  background:
+    linear-gradient(180deg, rgba(36, 38, 24, 0.94), rgba(21, 23, 21, 0.98)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='360' height='360' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E") !important;
+}
+
+h1, h2, h3,
+.brand,
+.topbar-logo,
+.topbar-page,
+.topbar-link,
+.nav-link,
+.btn-topbar,
+.btn-sm,
+.btn-create,
+.btn-leaflet,
+.btn-card,
+.btn-submit,
+.card-title,
+.map-card-name,
+.store-name strong,
+.board-title,
+.tool-label,
+.tool-name,
+.zoom-btn,
+.back-link,
+footer {
+  font-family: Cinzel, Georgia, serif !important;
+}
+
+p,
+input,
+textarea,
+button,
+.card-desc,
+.map-card-meta,
+.store-name span,
+.rune p,
+.empty-state,
+.toggle-hint {
+  font-family: Lato, Arial, sans-serif !important;
+}
+
+#topbar,
+.topbar {
+  background: var(--ui-topbar) !important;
+  border-bottom: 1px solid var(--ui-topbar-border) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  color: var(--ui-gold-soft) !important;
+}
+
+.topbar-logo,
+.brand,
+.topbar-page,
+.topbar-link,
+.nav-link,
+.user-chip,
+#auth-area .user-info,
+#coords-bar {
+  color: var(--ui-gold-soft) !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.34);
+}
+
+.topbar-link:hover,
+.nav-link:hover {
+  background: rgba(242, 228, 172, 0.13) !important;
+  color: #FFF0B8 !important;
+}
+
+.topbar-sep {
+  color: var(--ui-gold) !important;
+  opacity: 0.75 !important;
+}
+
+.theme-toggle,
+.global-theme-toggle {
+  width: 40px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(138, 122, 80, 0.34);
+  border-radius: 8px;
+  background: var(--ui-gold-soft);
+  color: #2A2515;
+  box-shadow: 0 6px 18px rgba(138, 122, 80, 0.18);
+  cursor: pointer;
+  font: 18px Lato, Arial, sans-serif !important;
+  line-height: 1;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.theme-toggle:hover,
+.global-theme-toggle:hover {
+  transform: translateY(-2px);
+  background: var(--ui-gold);
+}
+
+.global-theme-toggle.is-floating {
+  position: fixed;
+  z-index: 1600;
+  right: 16px;
+  top: 16px;
+}
+
+.page-header {
+  background: var(--ui-panel) !important;
+  color: var(--ui-ink) !important;
+  border-bottom: 1px solid rgba(138, 122, 80, 0.28) !important;
+}
+
+.page-header h1,
+.map-card-name,
+.card-title,
+.board-title,
+.store-name strong,
+.rune b {
+  color: var(--ui-ink) !important;
+}
+
+.page-header p,
+.map-card-meta,
+.card-desc,
+.store-name span,
+.rune p,
+.empty-state,
+.toggle-hint {
+  color: var(--ui-muted) !important;
+  opacity: 1 !important;
+}
+
+.map-card,
+.card,
+.rune,
+.home-panel,
+.modal-box,
+.login-card {
+  background-color: var(--ui-panel) !important;
+  border-color: rgba(138, 122, 80, 0.34) !important;
+  color: var(--ui-ink) !important;
+  box-shadow: 0 18px 46px var(--ui-shadow);
+}
+
+.map-card-body,
+.tab-content,
+.modal-body {
+  color: var(--ui-ink) !important;
+}
+
+.map-card-thumb {
+  filter: brightness(0.68) saturate(0.72) !important;
+}
+
+body.night .map-card-thumb,
+body.night .map-showcase img,
+body.night .leaflet-image-layer {
+  filter: brightness(0.62) saturate(0.8) contrast(0.96) !important;
+}
+
+.btn-create,
+.btn-submit,
+.action-button.primary,
+.btn-save {
+  background: var(--ui-olive) !important;
+  color: var(--ui-gold-soft) !important;
+  border-color: var(--ui-gold-dark) !important;
+}
+
+.btn-leaflet,
+.btn-outline,
+.btn-card,
+.action-button.secondary,
+.btn-sm,
+.back-link {
+  color: var(--ui-gold-dark) !important;
+  border-color: var(--ui-gold-dark) !important;
+}
+
+body.night .btn-leaflet,
+body.night .btn-outline,
+body.night .btn-card,
+body.night .action-button.secondary,
+body.night .btn-sm,
+body.night .back-link {
+  color: var(--ui-gold-soft) !important;
+}
+
+input,
+textarea {
+  background: var(--ui-paper-deep) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-gold-dark) !important;
+}
+
+body.night input,
+body.night textarea {
+  background: rgba(15, 16, 10, 0.78) !important;
+}
+
+footer {
+  background: var(--ui-olive) !important;
+  color: var(--ui-gold-soft) !important;
+}
+
+@media (max-width: 760px) {
+  .global-theme-toggle.is-floating {
+    top: 10px;
+    right: 10px;
+  }
+}
