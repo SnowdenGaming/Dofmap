@@ -263,7 +263,9 @@ button,
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  min-width: 220px;
+  min-height: 42px;
+  justify-content: flex-end;
 }
 
 .user-chip {

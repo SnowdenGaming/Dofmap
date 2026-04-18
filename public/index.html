@@ -90,30 +90,14 @@
 <footer>Dofus Retro 1.29 · Monde des Douze · Fan Site</footer>
 
 <script src="js/theme-toggle.js" defer></script>
+<script src="js/app-shell.js" defer></script>
 <script type="module">
   import './js/supabase-api.js';
 
-  const authArea = document.getElementById('auth-area');
-
   window.DofusApi.currentUser().then(user => {
-    if (user) {
-      authArea.innerHTML = `
-        <div class="user-chip">
-          <span class="user-chip-label">Compte</span>
-          <strong>${user.username}</strong>
-        </div>
-        <button class="btn-topbar btn-logout" onclick="logout()">Déconnexion</button>`;
-    } else {
-      authArea.innerHTML = `<a href="login.html" class="btn-topbar btn-login">Connexion</a>`;
-    }
+    if (user) window.DofusShell.setUser(user);
+    else window.DofusShell.setGuest();
   });
-
-  async function logout() {
-    await window.DofusApi.logout();
-    window.location.reload();
-  }
-
-  window.logout = logout;
 </script>
 </body>
 </html>
